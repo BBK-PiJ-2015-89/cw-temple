@@ -78,39 +78,39 @@ public class Explorer {
                 }
             }*/
         Set<Long> seen = new LinkedHashSet<>();
-        while(state.getCurrentLocation() != 0){
+
+        while (state.getDistanceToTarget() != 0) {
             Collection<NodeStatus> cns = state.getNeighbours();
-            seen.add(state.getCurrentLocation()); // current place
+            // add current position to seen items
+            seen.add(state.getCurrentLocation());
+
             int distance = Integer.MAX_VALUE;
             long id = -1L;
-            boolean progress = false;
-            for (NodeStatus ns : cns) {
-                if (ns.getDistanceToTarget() < distance && !seen.contains(ns.getId())) {
-                    distance = ns.getDistanceToTarget();
-                    id = ns.getId();
-                    progress = true;
-                    System.out.println("if statement 1");
+            try{
+                for (NodeStatus ns : cns) {
+                    if (ns.getDistanceToTarget() < distance && !seen.contains(ns.getId())) {
+                        distance = ns.getDistanceToTarget();
+                        id = ns.getId();
+                        state.moveTo(id);
+                    }
                 }
-                /*else if (!progress && ns.getDistanceToTarget() > distance){
-                    distance = ns.getDistanceToTarget();
-                    id = ns.getId();
-                    progress = true;
-                    System.out.println("if statement 2");
-                }*/
-
-
-
-
-
-
-
+            }
+            catch (IllegalArgumentException c){
+                for (NodeStatus ns : cns) {
+                    {
+                        distance = ns.getDistanceToTarget();
+                        id = ns.getId();
+                        state.moveTo(id);
+                    }
+                }
+            }
 
             System.out.println("Moving to tile with id: " + id);
             System.out.println("Moving from position: " + state.getCurrentLocation());
-            state.moveTo(id);
+
             System.out.println("\t to: " + state.getCurrentLocation());
         }
-    }}
+    }
 
     /**
      * Escape from the cavern before the ceiling collapses, trying to collect as much
