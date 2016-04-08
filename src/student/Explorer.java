@@ -48,7 +48,6 @@ public class Explorer {
             Collection<NodeStatus> cns = state.getNeighbours();
             // add current position to seen items
             seen.add(state.getCurrentLocation());
-            long tempID;
             int distance = Integer.MAX_VALUE;
             long id = -1L;
             boolean progress = false;
@@ -56,7 +55,6 @@ public class Explorer {
                 if (ns.getDistanceToTarget() < distance && !seen.contains(ns.getId())) {
                     distance = ns.getDistanceToTarget();
                     id = ns.getId();
-                    tempID = ns.getId();
                     progress = true;
                     System.out.println("if statement 1");
                 }
@@ -71,7 +69,7 @@ public class Explorer {
                     distance = ns.getDistanceToTarget();
                     System.out.println("if statement 3");
                 }
-                else if (ns.getDistanceToTarget() < distance ) {
+                else if (!progress && ns.getDistanceToTarget() <= distance ) {
                     distance = ns.getDistanceToTarget();
                     id = ns.getId();
                     System.out.println("if statement 1");
