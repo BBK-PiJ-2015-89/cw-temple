@@ -41,7 +41,7 @@ public class Explorer {
      * @param state the information available at the current state
      */
     public void explore(ExplorationState state) {
-        Set<Long> seen = new LinkedHashSet<>();
+        /*Set<Long> seen = new LinkedHashSet<>();
         Set<Long> seentwice = new LinkedHashSet<>();
 
         while (state.getDistanceToTarget() != 0) {
@@ -55,6 +55,7 @@ public class Explorer {
                 if (ns.getDistanceToTarget() < distance && !seen.contains(ns.getId())) {
                     distance = ns.getDistanceToTarget();
                     id = ns.getId();
+                    seen.add(ns.getId());
                     progress = true;
                     System.out.println("if statement 1");
                 }
@@ -69,12 +70,39 @@ public class Explorer {
                     distance = ns.getDistanceToTarget();
                     System.out.println("if statement 3");
                 }
-                else if (!progress && ns.getDistanceToTarget() <= distance ) {
+                else if (!seentwice.contains(ns.getId()) && ns.getDistanceToTarget() < distance) {
                     distance = ns.getDistanceToTarget();
                     id = ns.getId();
+                    seen.add(ns.getId());
+                    System.out.println("if statement 4");
+                }
+            }*/
+        Set<Long> seen = new LinkedHashSet<>();
+        while(state.getCurrentLocation() != 0){
+            Collection<NodeStatus> cns = state.getNeighbours();
+            seen.add(state.getCurrentLocation()); // current place
+            int distance = Integer.MAX_VALUE;
+            long id = -1L;
+            boolean progress = false;
+            for (NodeStatus ns : cns) {
+                if (ns.getDistanceToTarget() < distance && !seen.contains(ns.getId())) {
+                    distance = ns.getDistanceToTarget();
+                    id = ns.getId();
+                    progress = true;
                     System.out.println("if statement 1");
                 }
-            }
+                /*else if (!progress && ns.getDistanceToTarget() > distance){
+                    distance = ns.getDistanceToTarget();
+                    id = ns.getId();
+                    progress = true;
+                    System.out.println("if statement 2");
+                }*/
+
+
+
+
+
+
 
 
             System.out.println("Moving to tile with id: " + id);
@@ -82,7 +110,7 @@ public class Explorer {
             state.moveTo(id);
             System.out.println("\t to: " + state.getCurrentLocation());
         }
-    }
+    }}
 
     /**
      * Escape from the cavern before the ceiling collapses, trying to collect as much
