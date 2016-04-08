@@ -42,28 +42,42 @@ public class Explorer {
      */
     public void explore(ExplorationState state) {
         Set<Long> seen = new LinkedHashSet<>();
+        Set<Long> seentwice = new LinkedHashSet<>();
 
         while (state.getDistanceToTarget() != 0) {
             Collection<NodeStatus> cns = state.getNeighbours();
             // add current position to seen items
             seen.add(state.getCurrentLocation());
-
+            long tempID;
             int distance = Integer.MAX_VALUE;
             long id = -1L;
-
+            boolean progress = false;
             for (NodeStatus ns : cns) {
                 if (ns.getDistanceToTarget() < distance && !seen.contains(ns.getId())) {
                     distance = ns.getDistanceToTarget();
                     id = ns.getId();
+                    tempID = ns.getId();
+                    progress = true;
+                    System.out.println("if statement 1");
                 }
-                else if(ns.getDistanceToTarget() >= distance && seen.contains(ns.getId())){
+                else if (!progress && seen.contains(ns.getId()) && !seentwice.contains(ns.getId())){
                     distance = ns.getDistanceToTarget();
                     id = ns.getId();
+                    seentwice.add((ns.getId()));
+                    System.out.println("if statement 2");
+                }
+                else if (!progress && !seentwice.contains(ns.getId())){
+                    id = ns.getId();
+                    distance = ns.getDistanceToTarget();
+                    System.out.println("if statement 3");
+                }
+                else if (ns.getDistanceToTarget() < distance ) {
+                    distance = ns.getDistanceToTarget();
+                    id = ns.getId();
+                    System.out.println("if statement 1");
                 }
             }
-            if (id == -1){
-                System.out.println("damn");
-            }
+
 
             System.out.println("Moving to tile with id: " + id);
             System.out.println("Moving from position: " + state.getCurrentLocation());
