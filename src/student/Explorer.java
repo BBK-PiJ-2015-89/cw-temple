@@ -50,12 +50,21 @@ public class Explorer {
 
             int distance = Integer.MAX_VALUE;
             long id = -1L;
+
             for (NodeStatus ns : cns) {
                 if (ns.getDistanceToTarget() < distance && !seen.contains(ns.getId())) {
                     distance = ns.getDistanceToTarget();
                     id = ns.getId();
                 }
+                else if(ns.getDistanceToTarget() >= distance && seen.contains(ns.getId())){
+                    distance = ns.getDistanceToTarget();
+                    id = ns.getId();
+                }
             }
+            if (id == -1){
+                System.out.println("damn");
+            }
+
             System.out.println("Moving to tile with id: " + id);
             System.out.println("Moving from position: " + state.getCurrentLocation());
             state.moveTo(id);
