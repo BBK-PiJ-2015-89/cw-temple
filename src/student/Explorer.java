@@ -41,27 +41,46 @@ public class Explorer {
      */
     public void explore(ExplorationState state) {
         List<Long> seen = new ArrayList<>();
+        int i = 1;
         while(state.getDistanceToTarget() != 0){
             long currentLocation = state.getCurrentLocation();
             int distance = Integer.MAX_VALUE;
             Collection<NodeStatus> nbrs = state.getNeighbours();
             List<NodeStatus> ordered = new ArrayList();
+            //seen.add(state.getCurrentLocation());
+            //System.out.println("added to seen" + state.getCurrentLocation());
             Comparator<NodeStatus> byDistance = NodeStatus::compareTo;
             ordered = nbrs.stream().sorted(byDistance).collect(Collectors.toList());
             long id = -1L;
-            if (ordered.size()>0){
-            for (int i = 0; i < ordered.size(); i++) {
-                if(!seen.contains(ordered.get(i).getId())) {
-                    id = ordered.get(i).getId();
-                    seen.add(ordered.get(i).getId());
-                    break;
+            if (ordered.size()>0) {
+                for (int j = 0; j < ordered.size(); j++) {
+                    if (!seen.contains(ordered.get(j).getId())) {
+                        id = ordered.get(j).getId();
+                        seen.add(ordered.get(j).getId());
+                        System.out.println("adding to seen: " + id);
+                        System.out.println("in first if statement at moment");
+                        i = 2;
+                        break;
+
+                    }
                 }
-                id = seen.get(seen.size()-1);
-            }
-            }else{
-                id = seen.get(seen.size()-1);
             }
 
+            if (id == -1){
+                System.out.println("i is currently set to " + i);
+                id = seen.get(seen.size()-1);
+                System.out.println("in 2 reverse");
+                i++;
+            }
+
+            if (id == state.getCurrentLocation()){
+                id = seen.get(seen.size()-i);
+                System.out.println(id + " is the ID being produced here");
+                System.out.println("in 3 reverse");
+                i++;
+            }
+            System.out.println("Moving from: " + state.getCurrentLocation());
+            System.out.println("to: " + id);
             state.moveTo(id);
 
 
