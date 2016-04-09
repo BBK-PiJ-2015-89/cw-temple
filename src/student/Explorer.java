@@ -46,11 +46,10 @@ public class Explorer {
             long currentLocation = state.getCurrentLocation();
             int distance = Integer.MAX_VALUE;
             Collection<NodeStatus> nbrs = state.getNeighbours();
-            List<NodeStatus> ordered = new ArrayList();
             //seen.add(state.getCurrentLocation());
             //System.out.println("added to seen" + state.getCurrentLocation());
             Comparator<NodeStatus> byDistance = NodeStatus::compareTo;
-            ordered = nbrs.stream().sorted(byDistance).collect(Collectors.toList());
+            List<NodeStatus> ordered = nbrs.stream().sorted(byDistance).collect(Collectors.toList());
             long id = -1L;
             if (ordered.size()>0) {
                 for (int j = 0; j < ordered.size(); j++) {
@@ -68,13 +67,13 @@ public class Explorer {
 
             if (id == -1){
                 System.out.println("i is currently set to " + i);
-                id = seen.get(seen.size()-1);
+                id = ordered.get(ordered.size()-1).getId();
                 System.out.println("in 2 reverse");
                 i++;
             }
 
             if (id == state.getCurrentLocation()){
-                id = seen.get(seen.size()-i);
+                id = ordered.get(ordered.size()-1).getId();
                 System.out.println(id + " is the ID being produced here");
                 System.out.println("in 3 reverse");
                 i++;
@@ -88,6 +87,13 @@ public class Explorer {
 
 
         }
+    }
+
+    private int reverseItUp(List seen){
+
+
+
+        return 0;
     }
 
     /**
