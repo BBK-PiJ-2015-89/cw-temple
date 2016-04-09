@@ -4,9 +4,8 @@ import game.EscapeState;
 import game.ExplorationState;
 import game.NodeStatus;
 
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Explorer {
 
@@ -41,74 +40,34 @@ public class Explorer {
      * @param state the information available at the current state
      */
     public void explore(ExplorationState state) {
-        /*Set<Long> seen = new LinkedHashSet<>();
-        Set<Long> seentwice = new LinkedHashSet<>();
-
-        while (state.getDistanceToTarget() != 0) {
-            Collection<NodeStatus> cns = state.getNeighbours();
-            // add current position to seen items
-            seen.add(state.getCurrentLocation());
+        List<Long> seen = new ArrayList<>();
+        while(state.getDistanceToTarget() != 0){
+            long currentLocation = state.getCurrentLocation();
             int distance = Integer.MAX_VALUE;
+            Collection<NodeStatus> nbrs = state.getNeighbours();
+            List<NodeStatus> ordered = new ArrayList();
+            Comparator<NodeStatus> byDistance = NodeStatus::compareTo;
+            ordered = nbrs.stream().sorted(byDistance).collect(Collectors.toList());
             long id = -1L;
-            boolean progress = false;
-            for (NodeStatus ns : cns) {
-                if (ns.getDistanceToTarget() < distance && !seen.contains(ns.getId())) {
-                    distance = ns.getDistanceToTarget();
-                    id = ns.getId();
-                    seen.add(ns.getId());
-                    progress = true;
-                    System.out.println("if statement 1");
+            if (ordered.size()>0){
+            for (int i = 0; i < ordered.size(); i++) {
+                if(!seen.contains(ordered.get(i).getId())) {
+                    id = ordered.get(i).getId();
+                    seen.add(ordered.get(i).getId());
+                    break;
                 }
-                else if (!progress && seen.contains(ns.getId()) && !seentwice.contains(ns.getId())){
-                    distance = ns.getDistanceToTarget();
-                    id = ns.getId();
-                    seentwice.add((ns.getId()));
-                    System.out.println("if statement 2");
-                }
-                else if (!progress && !seentwice.contains(ns.getId())){
-                    id = ns.getId();
-                    distance = ns.getDistanceToTarget();
-                    System.out.println("if statement 3");
-                }
-                else if (!seentwice.contains(ns.getId()) && ns.getDistanceToTarget() < distance) {
-                    distance = ns.getDistanceToTarget();
-                    id = ns.getId();
-                    seen.add(ns.getId());
-                    System.out.println("if statement 4");
-                }
-            }*/
-        Set<Long> seen = new LinkedHashSet<>();
-
-        while (state.getDistanceToTarget() != 0) {
-            Collection<NodeStatus> cns = state.getNeighbours();
-            // add current position to seen items
-            seen.add(state.getCurrentLocation());
-
-            int distance = Integer.MAX_VALUE;
-            long id = -1L;
-            try{
-                for (NodeStatus ns : cns) {
-                    if (ns.getDistanceToTarget() < distance && !seen.contains(ns.getId())) {
-                        distance = ns.getDistanceToTarget();
-                        id = ns.getId();
-                        state.moveTo(id);
-                    }
-                }
+                id = seen.get(seen.size()-1);
             }
-            catch (IllegalArgumentException c){
-                for (NodeStatus ns : cns) {
-                    {
-                        distance = ns.getDistanceToTarget();
-                        id = ns.getId();
-                        state.moveTo(id);
-                    }
-                }
+            }else{
+                id = seen.get(seen.size()-1);
             }
 
-            System.out.println("Moving to tile with id: " + id);
-            System.out.println("Moving from position: " + state.getCurrentLocation());
+            state.moveTo(id);
 
-            System.out.println("\t to: " + state.getCurrentLocation());
+
+
+
+
         }
     }
 
