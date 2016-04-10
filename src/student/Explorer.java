@@ -39,104 +39,68 @@ public class Explorer {
      *
      * @param state the information available at the current state
      */
-    Collection<Long> seen = new LinkedHashSet<>();
-    Queue<Long> queue = new ArrayDeque<>();
-
     public void explore(ExplorationState state) {
-        exp(state);
-    }
+        Collection<Long> seen = new LinkedHashSet<>();
+        Stack<Long> path = new Stack<>();
 
-
-    public void exp(ExplorationState state) {
-        if (!queue.isEmpty()) {
-            long popped = queue.remove();
-            state.moveTo(popped);
-            seen.add(popped);
-        }
-
-        Collection<NodeStatus> nbrs2 = state.getNeighbours();
-        Comparator<NodeStatus> byDistance = NodeStatus::compareTo;
-        List<NodeStatus> ordered = nbrs2.stream().sorted(byDistance).collect(Collectors.toList());
-        for (int i = 0; i < ordered.size(); i++) {
-            if (ordered.get(i).getDistanceToTarget()-1 <state.getDistanceToTarget() && !seen.contains(ordered.get(i).getId()))
-                queue.add(ordered.get(i).getId());
-        }
-        if (state.getDistanceToTarget() != 0) {
-            exp(state);
-        }
-    }
-
-
-
-
-
-
-        /*Collection<Long> seenide = new LinkedHashSet<>();//seen in deadend list
-        Collection<Long> seenStuck = new LinkedHashSet<>();//seen in deadend for stuck list
-        int i = 1;
         while (state.getDistanceToTarget() != 0) {
+
             long currentLocation = state.getCurrentLocation();
-            boolean normalpath = false;
             Collection<NodeStatus> nbrs = state.getNeighbours();
+            seen.add(currentLocation);
             Comparator<NodeStatus> byDistance = NodeStatus::compareTo;
             List<NodeStatus> ordered = nbrs.stream().sorted(byDistance).collect(Collectors.toList());
-            int distance = Integer.MAX_VALUE;
-            long id = -1L;
-            for (NodeStatus anOrdered : ordered) { //normal path
-                if (anOrdered.getDistanceToTarget()-1 < distance && !seen.contains(anOrdered.getId())) {
-                    id = anOrdered.getId();
-                    distance = anOrdered.getDistanceToTarget();
-                    seen.add(anOrdered.getId());
-                    normalpath = true;
+
+            for (NodeStatus node: ordered) { //normal path
+
+                if (/*isCloser(state, node) && */!seen.contains(node.getId())) {
+                    move(state, seen, path, currentLocation, node);
                     break;
                 }
+
             }
-            if (normalpath) {
-                System.out.println("current location: " + currentLocation);
-                System.out.println("moving to location: " + id);
-                state.moveTo(id);
-                seen.add(currentLocation);
+
+//            if (currentLocation == state.getCurrentLocation()){
+//                for (NodeStatus node: ordered) {
+//                    if (!seen.contains(node.getId())) {
+//                        move(state, seen, path, currentLocation, node);
+//                        break;
+//                    }
+//
+//                }
+//            }
+
+            if (currentLocation == state.getCurrentLocation()) {
+                state.moveTo(path.pop());
             }
-            if (!normalpath) {
-                for (NodeStatus anOrdered : ordered) {
-                    if (seen.contains(anOrdered.getId())) {
-                        id = anOrdered.getId();
-                        seen.remove(currentLocation);
-                        normalpath = true;
-                        state.moveTo(id);
-                        break;
-                    }
+
+        }
+    }
+
+    private void move(ExplorationState state, Collection<Long> seen, Stack<Long> path, long currentLocation, NodeStatus node) {
+        long id;
+        id = node.getId();
+
+        System.out.println("Moving from: " + state.getCurrentLocation());
+        System.out.println("to: " + id);
+        seen.add(id);
+        state.moveTo(id);
+        path.add(currentLocation);
+    }
+
+    private boolean isCloser(ExplorationState state, NodeStatus node) {
+        return node.getDistanceToTarget() - 1 < state.getDistanceToTarget();
+    }
+
+
+
+
+            /*if (!normalpath){
+                for (int j = 0; j <ordered.size() ; j++) {
+                    seen.remove(ordered.get(j).getId());
+                   }
+
                 }*/
-
-
-
-
-
-
-
-
-
-            /*if (!normalpath) {
-                seenide.add(currentLocation);
-                for (NodeStatus anOrdered : ordered) {
-                    if (!seenide.contains(anOrdered.getId())) {
-                        id = anOrdered.getId();
-                    }
-                }
-                if (id == -1) {
-                    System.out.println("finalcountdown");
-                    for (NodeStatus anOrdered : ordered) {
-                        seenide.clear();
-                        seenide.add(currentLocation);
-                        if (!seenide.contains(anOrdered.getId())) {
-                            id = anOrdered.getId();
-                        }
-                    }
-                }*/
-                /*System.out.println("current location alt: " + currentLocation);
-                System.out.println("moving to location alt" + id);
-                state.moveTo(id);*/
-
     //id = ordered.get(ordered.size()-1).getId();
             /*if (!normalpath){
                 seenide.add(currentLocation);
@@ -148,7 +112,7 @@ public class Explorer {
                 }
             }}
 
-            //won't pass -s 631980657864787992
+            //won't pass -s 631980657864787992 -s 1754181467924199018
             if(id == -1){
                 seenStuck.add(currentLocation);
                 System.out.println("SAVE");
@@ -171,9 +135,6 @@ public class Explorer {
                 i++;
             }*/
 
-
-    //}
-    // }
 
     /**
      * Escape from the cavern before the ceiling collapses, trying to collect as much
