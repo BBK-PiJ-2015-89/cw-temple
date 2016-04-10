@@ -39,24 +39,54 @@ public class Explorer {
      *
      * @param state the information available at the current state
      */
+    Collection<Long> seen = new LinkedHashSet<>();
+    Queue<Long> queue = new ArrayDeque<>();
+
     public void explore(ExplorationState state) {
-        Collection<Long> seen = new LinkedHashSet<>();
-        Collection<Long> seenide = new LinkedHashSet<>();//seen in deadend list
+        exp(state);
+    }
+
+
+    public void exp(ExplorationState state) {
+        if (!queue.isEmpty()) {
+            long popped = queue.remove();
+            state.moveTo(popped);
+            seen.add(popped);
+        }
+
+        Collection<NodeStatus> nbrs2 = state.getNeighbours();
+        Comparator<NodeStatus> byDistance = NodeStatus::compareTo;
+        List<NodeStatus> ordered = nbrs2.stream().sorted(byDistance).collect(Collectors.toList());
+        for (int i = 0; i < ordered.size(); i++) {
+            if (ordered.get(i).getDistanceToTarget()-1 <state.getDistanceToTarget() && !seen.contains(ordered.get(i).getId()))
+                queue.add(ordered.get(i).getId());
+        }
+        if (state.getDistanceToTarget() != 0) {
+            exp(state);
+        }
+    }
+
+
+
+
+
+
+        /*Collection<Long> seenide = new LinkedHashSet<>();//seen in deadend list
         Collection<Long> seenStuck = new LinkedHashSet<>();//seen in deadend for stuck list
-        int distance = Integer.MAX_VALUE;
         int i = 1;
         while (state.getDistanceToTarget() != 0) {
             long currentLocation = state.getCurrentLocation();
-            distance = state.getDistanceToTarget();
             boolean normalpath = false;
             Collection<NodeStatus> nbrs = state.getNeighbours();
             Comparator<NodeStatus> byDistance = NodeStatus::compareTo;
             List<NodeStatus> ordered = nbrs.stream().sorted(byDistance).collect(Collectors.toList());
+            int distance = Integer.MAX_VALUE;
             long id = -1L;
-            for (int j = 0; j < ordered.size(); j++) { //normal path
-                if (!seen.contains(ordered.get(j).getId())) {
-                    id = ordered.get(j).getId();
-                    seen.add(ordered.get(j).getId());
+            for (NodeStatus anOrdered : ordered) { //normal path
+                if (anOrdered.getDistanceToTarget()-1 < distance && !seen.contains(anOrdered.getId())) {
+                    id = anOrdered.getId();
+                    distance = anOrdered.getDistanceToTarget();
+                    seen.add(anOrdered.getId());
                     normalpath = true;
                     break;
                 }
@@ -68,28 +98,46 @@ public class Explorer {
                 seen.add(currentLocation);
             }
             if (!normalpath) {
+                for (NodeStatus anOrdered : ordered) {
+                    if (seen.contains(anOrdered.getId())) {
+                        id = anOrdered.getId();
+                        seen.remove(currentLocation);
+                        normalpath = true;
+                        state.moveTo(id);
+                        break;
+                    }
+                }*/
+
+
+
+
+
+
+
+
+
+            /*if (!normalpath) {
                 seenide.add(currentLocation);
-                for (int j = 0; j < ordered.size(); j++) {
-                    if (!seenide.contains(ordered.get(j).getId())) {
-                        id = ordered.get(j).getId();
+                for (NodeStatus anOrdered : ordered) {
+                    if (!seenide.contains(anOrdered.getId())) {
+                        id = anOrdered.getId();
                     }
                 }
                 if (id == -1) {
                     System.out.println("finalcountdown");
-                    for (int j = 0; j < ordered.size(); j++) {
+                    for (NodeStatus anOrdered : ordered) {
                         seenide.clear();
                         seenide.add(currentLocation);
-                        if (!seenide.contains(ordered.get(j).getId())) {
-                            id = ordered.get(j).getId();
+                        if (!seenide.contains(anOrdered.getId())) {
+                            id = anOrdered.getId();
                         }
                     }
-                }
-                System.out.println("current location alt: " + currentLocation);
+                }*/
+                /*System.out.println("current location alt: " + currentLocation);
                 System.out.println("moving to location alt" + id);
-                state.moveTo(id);
+                state.moveTo(id);*/
 
-            }
-            //id = ordered.get(ordered.size()-1).getId();
+    //id = ordered.get(ordered.size()-1).getId();
             /*if (!normalpath){
                 seenide.add(currentLocation);
                 System.out.println("OFF NORMAL PATH");
@@ -124,8 +172,8 @@ public class Explorer {
             }*/
 
 
-        }
-    }
+    //}
+    // }
 
     /**
      * Escape from the cavern before the ceiling collapses, trying to collect as much
