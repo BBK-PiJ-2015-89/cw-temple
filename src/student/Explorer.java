@@ -53,7 +53,7 @@ public class Explorer {
 
             for (NodeStatus node: ordered) { //normal path
 
-                if (/*isCloser(state, node) && */!seen.contains(node.getId())) {
+                if (!seen.contains(node.getId())) {
                     move(state, seen, path, currentLocation, node);
                     break;
                 }
@@ -76,10 +76,6 @@ public class Explorer {
         seen.add(id);
         state.moveTo(id);
         path.add(currentLocation);
-    }
-
-    private boolean isCloser(ExplorationState state, NodeStatus node) {
-        return node.getDistanceToTarget() - 1 < state.getDistanceToTarget();
     }
 
     /**
