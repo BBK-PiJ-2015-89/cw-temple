@@ -60,16 +60,6 @@ public class Explorer {
 
             }
 
-//            if (currentLocation == state.getCurrentLocation()){
-//                for (NodeStatus node: ordered) {
-//                    if (!seen.contains(node.getId())) {
-//                        move(state, seen, path, currentLocation, node);
-//                        break;
-//                    }
-//
-//                }
-//            }
-
             if (currentLocation == state.getCurrentLocation()) {
                 state.moveTo(path.pop());
             }
@@ -91,50 +81,6 @@ public class Explorer {
     private boolean isCloser(ExplorationState state, NodeStatus node) {
         return node.getDistanceToTarget() - 1 < state.getDistanceToTarget();
     }
-
-
-
-
-            /*if (!normalpath){
-                for (int j = 0; j <ordered.size() ; j++) {
-                    seen.remove(ordered.get(j).getId());
-                   }
-
-                }*/
-    //id = ordered.get(ordered.size()-1).getId();
-            /*if (!normalpath){
-                seenide.add(currentLocation);
-                System.out.println("OFF NORMAL PATH");
-                for (int j = 0; j < ordered.size(); j++) {
-                    if (ordered.get(j).getDistanceToTarget() < distance && !seenide.contains(ordered.get(j).getId())) {
-                        id = ordered.get(j).getId();
-                        break;
-                }
-            }}
-
-            //won't pass -s 631980657864787992 -s 1754181467924199018
-            if(id == -1){
-                seenStuck.add(currentLocation);
-                System.out.println("SAVE");
-                for (int j = 0; j < ordered.size(); j++) {
-                    if (!seenStuck.contains(ordered.get(j).getId()) && ordered.get(j).getDistanceToTarget() > distance){
-                        id = ordered.get(j).getId();
-                        break;
-                    }
-            }}
-
-
-
-
-
-            if (id == -1 || id == state.getCurrentLocation()){
-                List<Long> seenList = new ArrayList<Long>(seen);
-                Collections.sort(seenList);
-                id = seenList.get(seenList.size()-i);
-                System.out.println("value of i = " + i);
-                i++;
-            }*/
-
 
     /**
      * Escape from the cavern before the ceiling collapses, trying to collect as much
