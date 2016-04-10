@@ -42,60 +42,90 @@ public class Explorer {
     public void explore(ExplorationState state) {
         Collection<Long> seen = new LinkedHashSet<>();
         Collection<Long> seenide = new LinkedHashSet<>();//seen in deadend list
+        Collection<Long> seenStuck = new LinkedHashSet<>();//seen in deadend for stuck list
+        int distance = Integer.MAX_VALUE;
         int i = 1;
-        while(state.getDistanceToTarget() != 0){
+        while (state.getDistanceToTarget() != 0) {
             long currentLocation = state.getCurrentLocation();
-            int distance = Integer.MAX_VALUE;
+            distance = state.getDistanceToTarget();
             boolean normalpath = false;
             Collection<NodeStatus> nbrs = state.getNeighbours();
-            seen.add(state.getCurrentLocation());
-            System.out.println("added to seen" + state.getCurrentLocation());
             Comparator<NodeStatus> byDistance = NodeStatus::compareTo;
             List<NodeStatus> ordered = nbrs.stream().sorted(byDistance).collect(Collectors.toList());
-            System.out.println(ordered.size() + "size of neighbour list");
             long id = -1L;
-                for (int j = 0; j < ordered.size(); j++) { //normal path
-                    if (!seen.contains(ordered.get(j).getId())) {
-                        id = ordered.get(j).getId();
-                        seen.add(ordered.get(j).getId());
-                        System.out.println("adding to seen: " + id);
-                        System.out.println("in first if statement at moment");
-                        normalpath = true;
-                        break;
-
-                    }
+            for (int j = 0; j < ordered.size(); j++) { //normal path
+                if (!seen.contains(ordered.get(j).getId())) {
+                    id = ordered.get(j).getId();
+                    seen.add(ordered.get(j).getId());
+                    normalpath = true;
+                    break;
                 }
-
-            if (!normalpath){
-                seenide.add(state.getCurrentLocation());
-                System.out.println("added extra to list: " + state.getCurrentLocation());
-                System.out.println("size of ordered list now " + ordered.size());
+            }
+            if (normalpath) {
+                System.out.println("current location: " + currentLocation);
+                System.out.println("moving to location: " + id);
+                state.moveTo(id);
+                seen.add(currentLocation);
+            }
+            if (!normalpath) {
+                seenide.add(currentLocation);
                 for (int j = 0; j < ordered.size(); j++) {
                     if (!seenide.contains(ordered.get(j).getId())) {
                         id = ordered.get(j).getId();
+                    }
                 }
+                if (id == -1) {
+                    System.out.println("finalcountdown");
+                    for (int j = 0; j < ordered.size(); j++) {
+                        seenide.clear();
+                        seenide.add(currentLocation);
+                        if (!seenide.contains(ordered.get(j).getId())) {
+                            id = ordered.get(j).getId();
+                        }
+                    }
+                }
+                System.out.println("current location alt: " + currentLocation);
+                System.out.println("moving to location alt" + id);
+                state.moveTo(id);
+
+            }
+            //id = ordered.get(ordered.size()-1).getId();
+            /*if (!normalpath){
+                seenide.add(currentLocation);
+                System.out.println("OFF NORMAL PATH");
+                for (int j = 0; j < ordered.size(); j++) {
+                    if (ordered.get(j).getDistanceToTarget() < distance && !seenide.contains(ordered.get(j).getId())) {
+                        id = ordered.get(j).getId();
+                        break;
+                }
+            }}
+
+            //won't pass -s 631980657864787992
+            if(id == -1){
+                seenStuck.add(currentLocation);
+                System.out.println("SAVE");
+                for (int j = 0; j < ordered.size(); j++) {
+                    if (!seenStuck.contains(ordered.get(j).getId()) && ordered.get(j).getDistanceToTarget() > distance){
+                        id = ordered.get(j).getId();
+                        break;
+                    }
             }}
 
 
 
 
 
-            /*if (id == -1 || id == state.getCurrentLocation()){
+            if (id == -1 || id == state.getCurrentLocation()){
                 List<Long> seenList = new ArrayList<Long>(seen);
                 Collections.sort(seenList);
                 id = seenList.get(seenList.size()-i);
                 System.out.println("value of i = " + i);
                 i++;
             }*/
-            System.out.println("Moving from: " + state.getCurrentLocation());
-            System.out.println("to: " + id);
-            state.moveTo(id);
 
 
-
-
-
-        }}
+        }
+    }
 
     /**
      * Escape from the cavern before the ceiling collapses, trying to collect as much
