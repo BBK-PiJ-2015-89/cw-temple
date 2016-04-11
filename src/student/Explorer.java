@@ -39,13 +39,15 @@ public class Explorer {
      *
      * @param state the information available at the current state
      */
+
     public void explore(ExplorationState state) {
         Collection<Long> seen = new LinkedHashSet<>();
         HashMap<Long, MazeNode> mazeNodes = new HashMap<>();
-        Queue<Long> q = new ArrayDeque<>();
+        PriorityQueue<Long> q = new PriorityQueueImpl<>();
         mazeNodes.put(state.getCurrentLocation(), new MazeNode(state.getCurrentLocation(), state.getCurrentLocation()));
-        q.add(state.getCurrentLocation());
+        q.add(state.getCurrentLocation(), state.getCurrentLocation());
         System.out.println("Start");
+
 
         while (state.getDistanceToTarget() != 0) {
 
@@ -59,7 +61,7 @@ public class Explorer {
             List<NodeStatus> ordered = nbrs.stream().sorted(byDistance).collect(Collectors.toList());
 
             ordered.stream().filter(node -> !seen.contains(node.getId())).forEach(node -> {
-                q.add(node.getId());
+                q.add(node.getId(), node.getDistanceToTarget());
                 mazeNodes.put(node.getId(), new MazeNode(node.getId(), currentLocation));
                 seen.add(node.getId());
             });
@@ -91,21 +93,29 @@ public class Explorer {
     }
 
     private void retraceBack(ExplorationState state, HashMap<Long, MazeNode> mazeNodes, MazeNode moveFrom, MazeNode moveTo, List<Long> path, Long next) {
-        System.out.println("retracing");
         if (moveTo.getParent() != moveFrom.getParent()) {
-            System.out.println("moving to parent of this one");
-            state.moveTo(moveFrom.getParent());
+            System.out.println("moving from: " + state.getCurrentLocation() +" to: " + moveFrom.getParent());
+            if(state.getCurrentLocation()!=moveFrom.getParent()) {
+                state.moveTo(moveFrom.getParent());
+            }
+            System.out.println("adding to path: " + moveTo.getParent());
             path.add(moveTo.getParent());
             moveTo = mazeNodes.get(moveTo.getParent());
             moveFrom = mazeNodes.get(state.getCurrentLocation());
             retraceBack(state, mazeNodes, moveFrom, moveTo, path, next);
         }else{
             if(moveFrom.getParent()!=state.getCurrentLocation()){
+                System.out.println("moving from: " + state.getCurrentLocation() +" to: " + moveFrom.getParent());
                 state.moveTo(moveFrom.getParent());
             }
             System.out.println(path.toString());
+            System.out.println("Following Path");
             for (int i = path.size() - 1; i >= 0; i--) {
-                state.moveTo(path.get(i));
+                if(state.getCurrentLocation()!=path.get(i)) {
+                    System.out.println("moving from: " + state.getCurrentLocation() + " to: " + path.get(i));
+                    state.moveTo(path.get(i));
+                }
+
             }
             path.clear();
             move(state, state.getCurrentLocation(), next, mazeNodes);
