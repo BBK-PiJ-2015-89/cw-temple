@@ -4,15 +4,15 @@ import game.NodeStatus;
 
 public class MazeNode {
 
-    private MazeNode parent;
+    private Long parent;
     private NodeStatus node;
 
-    public MazeNode(NodeStatus node, MazeNode parent){
+    public MazeNode(NodeStatus node, Long parent){
         this.parent = parent;
         this.node = node;
     }
 
-    public MazeNode getParent(){
+    public long getParent(){
         return parent;
     }
 
