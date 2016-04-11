@@ -41,33 +41,66 @@ public class Explorer {
      */
     public void explore(ExplorationState state) {
         Collection<Long> seen = new LinkedHashSet<>();
-        Stack<Long> path = new Stack<>();
+        Queue<Long> q = new ArrayDeque<>();
+        List<Long> path = new ArrayList<>();
+        q.add(state.getCurrentLocation());
+        seen.add(state.getCurrentLocation());
+        System.out.println("Start");
+
 
         while (state.getDistanceToTarget() != 0) {
 
             long currentLocation = state.getCurrentLocation();
             Collection<NodeStatus> nbrs = state.getNeighbours();
+
             seen.add(currentLocation);
+
+
             Comparator<NodeStatus> byDistance = NodeStatus::compareTo;
+
             List<NodeStatus> ordered = nbrs.stream().sorted(byDistance).collect(Collectors.toList());
 
-            for (NodeStatus node: ordered) { //normal path
+            //normal q
+/*if (!seen.contains(node.getId())) {
+    move(state, seen, q, currentLocation, node);
+    break;
+}*//*if (currentLocation == state.getCurrentLocation()) {
+    state.moveTo(q.pop());
+}*/
 
-                if (!seen.contains(node.getId())) {
-                    move(state, seen, path, currentLocation, node);
-                    break;
+            for (NodeStatus node : ordered) { //normal q
+                    q.add(node.getId());
                 }
 
+                Long next = q.poll();
+                move(state, currentLocation, next, path);
             }
-
-            if (currentLocation == state.getCurrentLocation()) {
-                state.moveTo(path.pop());
-            }
-
         }
+
+    private void move(ExplorationState state, long currentLocation, Long next, List<Long> path) {
+        if(currentLocation == next) {
+            return;
+        }
+        List<NodeStatus> tempNbrs = state.getNeighbours().stream().filter(e -> e.getId()==next).collect(Collectors.toList());
+        if(tempNbrs.size()>0){
+            System.out.println("path = " + path);
+            System.out.println("Move from " + currentLocation + " to " + next);
+            path.add(currentLocation);
+            System.out.println("MOVE TO NBR");
+            state.moveTo(next);
+            return;
+        }
+        System.out.println("path = " + path);
+        System.out.println("Move from " + currentLocation + " to " + (path.get(path.size()-1)));
+        System.out.println("RETRACING 1");
+        state.moveTo(path.get(path.size() - 2));
+        System.out.println("RETRACING 2");
+        path.remove(path.size()-1);
+        move(state, state.getCurrentLocation(), next, path);
+
     }
 
-    private void move(ExplorationState state, Collection<Long> seen, Stack<Long> path, long currentLocation, NodeStatus node) {
+  /*  private void move(ExplorationState state, Collection<Long> seen, Stack<Long> path, long currentLocation, NodeStatus node) {
         long id;
         id = node.getId();
 
@@ -77,6 +110,7 @@ public class Explorer {
         state.moveTo(id);
         path.add(currentLocation);
     }
+*/
 
     /**
      * Escape from the cavern before the ceiling collapses, trying to collect as much
