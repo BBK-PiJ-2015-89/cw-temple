@@ -1,13 +1,11 @@
 package student;
 
-import game.NodeStatus;
-
 public class MazeNode {
 
     private Long parent;
-    private NodeStatus node;
+    private Long node;
 
-    public MazeNode(NodeStatus node, Long parent){
+    public MazeNode(long node, long parent){
         this.parent = parent;
         this.node = node;
     }
@@ -16,7 +14,7 @@ public class MazeNode {
         return parent;
     }
 
-    public NodeStatus getNode(){
+    public long getNode(){
         return node;
     }
 }

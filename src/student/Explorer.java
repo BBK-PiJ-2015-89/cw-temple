@@ -43,11 +43,9 @@ public class Explorer {
         Collection<Long> seen = new LinkedHashSet<>();
         HashMap<Long, MazeNode> mazeNodes = new HashMap<>();
         Queue<Long> q = new ArrayDeque<>();
-
+        mazeNodes.put(state.getCurrentLocation(), new MazeNode(state.getCurrentLocation(), state.getCurrentLocation()));
         q.add(state.getCurrentLocation());
-        seen.add(state.getCurrentLocation());
         System.out.println("Start");
-
 
         while (state.getDistanceToTarget() != 0) {
 
@@ -56,24 +54,17 @@ public class Explorer {
 
             seen.add(currentLocation);
 
-
             Comparator<NodeStatus> byDistance = NodeStatus::compareTo;
 
             List<NodeStatus> ordered = nbrs.stream().sorted(byDistance).collect(Collectors.toList());
 
-            //normal q
-/*if (!seen.contains(node.getId())) {
-    move(state, seen, q, currentLocation, node);
-    break;
-}*//*if (currentLocation == state.getCurrentLocation()) {
-    state.moveTo(q.pop());
-}*/
+            ordered.stream().filter(node -> !seen.contains(node.getId())).forEach(node -> {
+                q.add(node.getId());
+                mazeNodes.put(node.getId(), new MazeNode(node.getId(), currentLocation));
+                seen.add(node.getId());
+            });
 
-            for (NodeStatus node : ordered) { //normal q
-                    q.add(node.getId());
-                    mazeNodes.put(node.getId(), new MazeNode(node, currentLocation));
-            }
-                Long next = q.poll();
+                Long next = q.poll(); // pop the next one to go to off the queue.
                 move(state, currentLocation, next, mazeNodes);
             }
         }
@@ -82,11 +73,8 @@ public class Explorer {
         if(currentLocation == next) {
             return;
         }
-        //List<NodeStatus> tempNbrs = state.getNeighbours().stream().filter(e -> e.getId()==next).collect(Collectors.toList());
         if(mazeNodes.get(next).getParent()==currentLocation){
-            //System.out.println("path = " + path);
             System.out.println("Move from " + currentLocation + " to " + next);
-            //path.add(currentLocation);
             System.out.println("MOVE TO NBR");
             state.moveTo(next);
             return;
@@ -100,40 +88,29 @@ public class Explorer {
             List<Long> path = new ArrayList<>();
             retraceBack(state, mazeNodes, moveFrom, moveTo, path, next);
         }
-        /*System.out.println("path = " + path);
-        System.out.println("Move from " + currentLocation + " to " + (path.get(path.size()-1)));
-        System.out.println("RETRACING 1");
-        state.moveTo(path.get(path.size() - 2));
-        System.out.println("RETRACING 2");
-        path.remove(path.size()-1);
-        move(state, state.getCurrentLocation(), next, path);*/
-
     }
 
     private void retraceBack(ExplorationState state, HashMap<Long, MazeNode> mazeNodes, MazeNode moveFrom, MazeNode moveTo, List<Long> path, Long next) {
+        System.out.println("retracing");
         if (moveTo.getParent() != moveFrom.getParent()) {
+            System.out.println("moving to parent of this one");
             state.moveTo(moveFrom.getParent());
             path.add(moveTo.getParent());
             moveTo = mazeNodes.get(moveTo.getParent());
             moveFrom = mazeNodes.get(state.getCurrentLocation());
             retraceBack(state, mazeNodes, moveFrom, moveTo, path, next);
         }else{
-            state.moveTo(moveFrom.getParent());
+            if(moveFrom.getParent()!=state.getCurrentLocation()){
+                state.moveTo(moveFrom.getParent());
+            }
+            System.out.println(path.toString());
+            for (int i = path.size() - 1; i >= 0; i--) {
+                state.moveTo(path.get(i));
+            }
+            path.clear();
             move(state, state.getCurrentLocation(), next, mazeNodes);
         }
     }
-
-  /*  private void move(ExplorationState state, Collection<Long> seen, Stack<Long> path, long currentLocation, NodeStatus node) {
-        long id;
-        id = node.getId();
-
-        System.out.println("Moving from: " + state.getCurrentLocation());
-        System.out.println("to: " + id);
-        seen.add(id);
-        state.moveTo(id);
-        path.add(currentLocation);
-    }
-*/
 
     /**
      * Escape from the cavern before the ceiling collapses, trying to collect as much
