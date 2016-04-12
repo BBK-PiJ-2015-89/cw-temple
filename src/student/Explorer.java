@@ -43,52 +43,53 @@ public class Explorer {
      */
 
     public void explore(ExplorationState state) {
-        Set<Long> seen = new HashSet<>();
-        PriorityQueue<List<Long>> q = new PriorityQueueImpl<>();
+        Set<Long> seen = new HashSet<>(); //set of neighbours seen/added to queue
+        PriorityQueue<List<Long>> q = new PriorityQueueImpl<>(); //queue containing paths to prioritised by distance
 
-        List<Long> initialPath = new ArrayList<>();
-        initialPath.add(state.getCurrentLocation());
-        enqueueNeighbours(q, seen, initialPath, state);
+        List<Long> initialPath = new ArrayList<>(); //empty list for initial path
+        initialPath.add(state.getCurrentLocation()); //add root of tree
+        seen.add(state.getCurrentLocation()); // mark the start location as seen
+        enqueueNeighbours(q, seen, initialPath, state); //add the neighbours to the queue (not seen and mark as seen).
 
-        List<Long> oldPath = initialPath;
+        List<Long> oldPath = initialPath; //start from root for paths.
 
-        while (state.getDistanceToTarget() > 0) {
-            List<Long> newPath = q.poll();
+        while (state.getDistanceToTarget() > 0) {// while we are not sat on the orb.
+            List<Long> newPath = q.poll(); //deqeue next path closest to orb
 
             int shared = 0;
-            while (shared < oldPath.size() && shared < newPath.size() && oldPath.get(shared).equals(newPath.get(shared))) {
+            while (shared < oldPath.size() && shared < newPath.size() && oldPath.get(shared).equals(newPath.get(shared))) { //count number of shared nodes on both paths
                 shared++;
             }
 
             System.out.println("Going from path: " + oldPath);
             System.out.println("Going to path: " + newPath);
 
-            for (int j = oldPath.size() - 2; j >= shared - 1; j--) {
+            for (int j = oldPath.size() - 2; j >= shared - 1; j--) { // moving up tree to find shared node.
                 System.out.println("Reverting to: " + oldPath.get(j));
                 state.moveTo(oldPath.get(j));
             }
 
-            for (int j = shared; j < newPath.size(); j++) {
+            for (int j = shared; j < newPath.size(); j++) { //moving from shared node to destination.
                 System.out.println("Moving to: " + newPath.get(j));
                 state.moveTo(newPath.get(j));
             }
 
-            enqueueNeighbours(q, seen, newPath, state);
-            oldPath = newPath;
+            enqueueNeighbours(q, seen, newPath, state); //queue new neighbours at destination.
+            oldPath = newPath; //store new path as old to use in next iterationm.
         }
     }
 
     void enqueueNeighbours(PriorityQueue<List<Long>> q, Set<Long> seen, List<Long> path, ExplorationState state) {
         for (NodeStatus node : state.getNeighbours()) {
-            if (seen.contains(node.getId())) {
+            if (seen.contains(node.getId())) {// if we have seen neighbour before, skip this neighbour.
                 continue;
             }
 
-            List<Long> nodePath = new ArrayList<>(path);
+            List<Long> nodePath = new ArrayList<>(path); // create copy of exsisting path and add neighbour to end.
             nodePath.add(node.getId());
 
-            q.add(nodePath, node.getDistanceToTarget());
-            seen.add(node.getId());
+            q.add(nodePath, node.getDistanceToTarget()); //adding path created to queue.
+            seen.add(node.getId()); //adding neighbour to seen set.
         }
     }
 
