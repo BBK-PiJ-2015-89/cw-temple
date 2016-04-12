@@ -4,8 +4,10 @@ import game.EscapeState;
 import game.ExplorationState;
 import game.NodeStatus;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class Explorer {
 
@@ -41,76 +43,52 @@ public class Explorer {
      */
 
     public void explore(ExplorationState state) {
-        Collection<Long> seen = new LinkedHashSet<>();
-        HashMap<Long, MazeNode> mazeNodes = new HashMap<>();
-        Queue<Long> q = new ArrayDeque<>();
-        mazeNodes.put(state.getCurrentLocation(), new MazeNode(state.getCurrentLocation(), state.getCurrentLocation()));
-        q.add(state.getCurrentLocation());
-        System.out.println("Start");
-        PriorityQueue<Long> graeme = new PriorityQueueImpl<>();
+        Set<Long> seen = new HashSet<>();
+        PriorityQueue<List<Long>> q = new PriorityQueueImpl<>();
 
-        while (state.getDistanceToTarget() != 0) {
+        List<Long> initialPath = new ArrayList<>();
+        initialPath.add(state.getCurrentLocation());
+        enqueueNeighbours(q, seen, initialPath, state);
 
-            long currentLocation = state.getCurrentLocation();
-            Collection<NodeStatus> nbrs = state.getNeighbours();
+        List<Long> oldPath = initialPath;
 
-            seen.add(currentLocation);
+        while (state.getDistanceToTarget() > 0) {
+            List<Long> newPath = q.poll();
 
-            Comparator<NodeStatus> byDistance = NodeStatus::compareTo;
-
-            List<NodeStatus> ordered = nbrs.stream().sorted(byDistance).collect(Collectors.toList());
-
-            ordered.stream().filter(node -> !seen.contains(node.getId())).forEach(node -> {
-                q.add(node.getId());
-                mazeNodes.put(node.getId(), new MazeNode(node.getId(), currentLocation));
-                seen.add(node.getId());
-            });
-
-                Long next = q.poll(); // pop the next one to go to off the queue.
-                move(state, currentLocation, next, mazeNodes);
+            int shared = 0;
+            while (shared < oldPath.size() && shared < newPath.size() && oldPath.get(shared).equals(newPath.get(shared))) {
+                shared++;
             }
-        }
 
-    private void move(ExplorationState state, long currentLocation, Long next, HashMap<Long, MazeNode> mazeNodes) {
-        if(currentLocation == next) {
-            return;
-        }
-        if(mazeNodes.get(next).getParent()==currentLocation){
-            System.out.println("Move from " + currentLocation + " to " + next);
-            System.out.println("MOVE TO NBR");
-            state.moveTo(next);
-            return;
-        }
-        MazeNode moveFrom = mazeNodes.get(currentLocation);
-        MazeNode moveTo = mazeNodes.get(next);
-        if(moveTo.getParent()==moveFrom.getParent()){
-                state.moveTo(moveTo.getParent());
-                move(state, state.getCurrentLocation(), next, mazeNodes);
-            }else{
-            List<Long> path = new ArrayList<>();
-            retraceBack(state, mazeNodes, moveFrom, moveTo, path, next);
+            System.out.println("Going from path: " + oldPath);
+            System.out.println("Going to path: " + newPath);
+
+            for (int j = oldPath.size() - 2; j >= shared - 1; j--) {
+                System.out.println("Reverting to: " + oldPath.get(j));
+                state.moveTo(oldPath.get(j));
+            }
+
+            for (int j = shared; j < newPath.size(); j++) {
+                System.out.println("Moving to: " + newPath.get(j));
+                state.moveTo(newPath.get(j));
+            }
+
+            enqueueNeighbours(q, seen, newPath, state);
+            oldPath = newPath;
         }
     }
 
-    private void retraceBack(ExplorationState state, HashMap<Long, MazeNode> mazeNodes, MazeNode moveFrom, MazeNode moveTo, List<Long> path, Long next) {
-        System.out.println("retracing");
-        if (moveTo.getParent() != moveFrom.getParent()) {
-            System.out.println("moving to parent of this one");
-            state.moveTo(moveFrom.getParent());
-            path.add(moveTo.getParent());
-            moveTo = mazeNodes.get(moveTo.getParent());
-            moveFrom = mazeNodes.get(state.getCurrentLocation());
-            retraceBack(state, mazeNodes, moveFrom, moveTo, path, next);
-        }else{
-            if(moveFrom.getParent()!=state.getCurrentLocation()){
-                state.moveTo(moveFrom.getParent());
+    void enqueueNeighbours(PriorityQueue<List<Long>> q, Set<Long> seen, List<Long> path, ExplorationState state) {
+        for (NodeStatus node : state.getNeighbours()) {
+            if (seen.contains(node.getId())) {
+                continue;
             }
-            System.out.println(path.toString());
-            for (int i = path.size() - 1; i >= 0; i--) {
-                state.moveTo(path.get(i));
-            }
-            path.clear();
-            move(state, state.getCurrentLocation(), next, mazeNodes);
+
+            List<Long> nodePath = new ArrayList<>(path);
+            nodePath.add(node.getId());
+
+            q.add(nodePath, node.getDistanceToTarget());
+            seen.add(node.getId());
         }
     }
 
