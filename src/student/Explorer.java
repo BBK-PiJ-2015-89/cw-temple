@@ -122,48 +122,46 @@ public class Explorer {
         Tile currentTile = currentLocation.getTile();
         int currentRow = currentTile.getRow();
         int currentColumn = currentTile.getColumn();
-        Queue<List<Node>> finishedRoutes = new ArrayDeque<>();
+        List<Path> finishedRoutes = new ArrayList<>();
 
         List<Node> initialPath = new ArrayList<>(); //empty list for initial path
         initialPath.add(currentLocation); //add root of tree
-        enqueueNeighboursEscape(allNodes, currentTile, currentRow, currentColumn);
         int goldGained = currentTile.getGold();
         q.add(new Path(goldGained, 0, initialPath));
 
         while (q.size()>0){
             Path newPath = q.poll();
-            Node current = newPath.(newPath.size()-1);
+            Node current = newPath.getPath().get(newPath.getPath().size()-1);
+
             Collection<Node> nbrs = getNeighbours(allNodes, current.getTile(), current.getTile().getRow(), current.getTile().getColumn());
             for(Node nbr : nbrs){
-                if(newPath.contains(nbr)){
+                if(newPath.getPath().contains(nbr)){
                     continue; //if we have no where left to visit then the path will be deleted from the queue.
                 }
-                List<Node> nodePath = new ArrayList<>(newPath);  // create copy of existing path and add neighbour to end.
-                if(newPath.contains(state.getExit())){
-                    nodePath.add(nbr);
-                    finishedRoutes.add(nodePath); //if the neighbour we select is the exit, then this route has finished.
+                Edge thisEdge = nbr.getEdge(newPath.getPath().get(newPath.getPath().size()-1));
+                if(newPath.getPath().contains(state.getExit())){
+                    int newGold = nbr.getTile().getGold();
+                    int oldGoldCount = newPath.getGoldCount();
+                    newPath.setGoldCount(oldGoldCount + newGold);
+                    int oldTime = newPath.getTimeTaken(); // retrieve current time taken
+                    newPath.setTimeTaken(oldTime+thisEdge.length);
+                    newPath.getPath().add(nbr);
+                    finishedRoutes.add(newPath); //if the neighbour we select is the exit, then this route has finished.
                     continue;
                 }
-                nodePath.add(nbr);
-                q.add(nodePath);
+
+                if (newPath.getTimeTaken() + thisEdge.length > state.getTimeRemaining()){
+                    continue;
+                }
+                int oldTime = newPath.getTimeTaken(); // retrieve current time taken
+                newPath.setTimeTaken(oldTime+thisEdge.length);
+                newPath.getPath().add(nbr);
+                int newGold = nbr.getTile().getGold(); //retrieve current gold on this neighbour tile.
+                int oldGoldCount = newPath.getGoldCount(); //retrieve total gold so far.
+                newPath.setGoldCount(oldGoldCount + newGold); //set new gold count.
+                q.add(newPath);
             }
         }
-    }
-
-
-
-
-
-
-
-
-
-
-
-    private void enqueueNeighboursEscape(Collection<Node> allNodes, Tile currentTile, int currentRow, int currentColumn) {
-
-        Collection<Node> nbrs = getNeighbours(allNodes, currentTile, currentRow, currentColumn);
-
 
     }
 

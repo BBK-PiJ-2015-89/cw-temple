@@ -31,4 +31,12 @@ public class Path {
     public List<Node> getPath() {
         return path;
     }
+
+    public void setGoldCount(int goldCount) {
+        this.goldCount = goldCount;
+    }
+
+    public void setTimeTaken(int timeTaken) {
+        this.timeTaken = timeTaken;
+    }
 }
