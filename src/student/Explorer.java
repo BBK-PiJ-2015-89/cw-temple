@@ -116,84 +116,60 @@ public class Explorer {
      */
     public void escape(EscapeState state) {
         //TODO: Escape from the cavern before time runs out
-
-
-
-
-
-
         Collection<Node> allNodes = state.getVertices();
-        Node exitNode = state.getExit();
-        Tile exitTile = exitNode.getTile();
-        int exitRow = exitTile.getRow();
-        int exitColumn = exitTile.getColumn();
-        List<Node> nbrs = new ArrayList<>();
-        Collection<Long> seen = new HashSet<>();
-        Collection<Node> nbrsOfExit = state.getExit().getNeighbours();
+        Queue<Path> q = new ArrayDeque<>();
+        Node currentLocation = state.getCurrentNode();
+        Tile currentTile = currentLocation.getTile();
+        int currentRow = currentTile.getRow();
+        int currentColumn = currentTile.getColumn();
+        Queue<List<Node>> finishedRoutes = new ArrayDeque<>();
 
+        List<Node> initialPath = new ArrayList<>(); //empty list for initial path
+        initialPath.add(currentLocation); //add root of tree
+        enqueueNeighboursEscape(allNodes, currentTile, currentRow, currentColumn);
+        int goldGained = currentTile.getGold();
+        q.add(new Path(goldGained, 0, initialPath));
 
-        while (state.getCurrentNode() != state.getExit()) {
-            Node currentLocation = state.getCurrentNode();
-            Tile currentTile = state.getCurrentNode().getTile();
-            int currentRow = currentTile.getRow();
-            int currentColumn = currentTile.getColumn();
-
-            if (currentTile.getGold() > 0) { // pick up gold if this tile has any.
-                state.pickUpGold();
-            }
-
-            //get neighbours
-            nbrs = allNodes.stream().filter(e -> (isCurrentRow(currentRow - 1, e) && e.getTile().getColumn() == currentColumn) || (isCurrentRow(currentRow + 1, e) && e.getTile().getColumn() == currentColumn) || (e.getTile().getColumn() == currentTile.getColumn() - 1 && isCurrentRow(currentRow, e))
-                    || (e.getTile().getColumn() == currentTile.getColumn() + 1 && isCurrentRow(currentRow, e)) && e.getTile().getType().equals(Tile.Type.FLOOR)).collect(Collectors.toList());
-
-
-            for (Node nbr : nbrs) {
-                if (seenBefore(seen, nbr) && nbrsOfExit.contains(currentLocation)) {
-                    System.out.println("Should be moving to exit");
-                    state.moveTo(state.getExit());
-                    break;
+        while (q.size()>0){
+            Path newPath = q.poll();
+            Node current = newPath.(newPath.size()-1);
+            Collection<Node> nbrs = getNeighbours(allNodes, current.getTile(), current.getTile().getRow(), current.getTile().getColumn());
+            for(Node nbr : nbrs){
+                if(newPath.contains(nbr)){
+                    continue; //if we have no where left to visit then the path will be deleted from the queue.
                 }
-                else if (seenBefore(seen, nbr) && nbr.getTile().getColumn() == currentColumn + 1 && isFloor(nbr) && isCurrentRow(currentRow, nbr)) {
-                    System.out.println("Moving to: " + nbr.getId() + " From: " + currentLocation.getId());
-                    seen.add(nbr.getId());
-                    state.moveTo(nbr);
-                    break;
-                } else if (seenBefore(seen, nbr) && isCurrentRow(currentRow + 1, nbr) && isFloor(nbr) && nbr.getTile().getColumn() == currentColumn) {
-                    System.out.println("Moving to: " + nbr.getId() + " From: " + currentLocation.getId());
-                    seen.add(nbr.getId());
-                    state.moveTo(nbr);
-                    break;
-                } else if (seenBefore(seen, nbr) && isCurrentRow(currentRow - 1, nbr) && isFloor(nbr) && isCurrentColumn(currentColumn, nbr)) {
-                    System.out.println("Moving to: " + nbr.getId() + " From: " + currentLocation.getId());
-                    seen.add(nbr.getId());
-                    state.moveTo(nbr);
-                    break;
-                } else if (seenBefore(seen, nbr) && nbr.getTile().getColumn() == currentColumn - 1 && isFloor(nbr) && isCurrentRow(currentRow, nbr)) {
-                    System.out.println("Moving to: " + nbr.getId() + " From: " + currentLocation.getId());
-                    seen.add(nbr.getId());
-                    state.moveTo(nbr);
-                    break;
+                List<Node> nodePath = new ArrayList<>(newPath);  // create copy of existing path and add neighbour to end.
+                if(newPath.contains(state.getExit())){
+                    nodePath.add(nbr);
+                    finishedRoutes.add(nodePath); //if the neighbour we select is the exit, then this route has finished.
+                    continue;
                 }
-
+                nodePath.add(nbr);
+                q.add(nodePath);
             }
-
-    }
-    }
-
-    private boolean isCurrentColumn(int currentColumn, Node nbr) {
-        return nbr.getTile().getColumn() == currentColumn;
+        }
     }
 
-    private boolean isCurrentRow(int currentRow, Node nbr) {
-        return nbr.getTile().getRow() == currentRow;
+
+
+
+
+
+
+
+
+
+
+    private void enqueueNeighboursEscape(Collection<Node> allNodes, Tile currentTile, int currentRow, int currentColumn) {
+
+        Collection<Node> nbrs = getNeighbours(allNodes, currentTile, currentRow, currentColumn);
+
+
     }
 
-    private boolean isFloor(Node nbr) {
-        return nbr.getTile().getType() == Tile.Type.FLOOR;
-    }
+    private Collection<Node> getNeighbours(Collection<Node> allNodes, Tile currentTile, int currentRow, int currentColumn) {
 
-    private boolean seenBefore(Collection<Long> seen, Node nbr) {
-        return !seen.contains(nbr.getId());
+        return allNodes.stream().filter(e -> (e.getTile().getRow() == currentRow - 1 && e.getTile().getColumn() == currentColumn) || (e.getTile().getRow() == currentRow + 1 && e.getTile().getColumn() == currentColumn) || (e.getTile().getColumn() == currentTile.getColumn() - 1 && e.getTile().getRow() == currentRow)
+                    || (e.getTile().getColumn() == currentTile.getColumn() + 1 && e.getTile().getRow() == currentRow) && e.getTile().getType().equals(Tile.Type.FLOOR)).collect(Collectors.toList());
     }
-
 }
