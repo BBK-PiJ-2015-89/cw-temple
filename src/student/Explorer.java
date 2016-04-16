@@ -1,8 +1,6 @@
 package student;
 
-import game.EscapeState;
-import game.ExplorationState;
-import game.NodeStatus;
+import game.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -118,5 +116,15 @@ public class Explorer {
      */
     public void escape(EscapeState state) {
         //TODO: Escape from the cavern before time runs out
-    }
+        Node startLocation = state.getCurrentNode();
+        Tile startTile= state.getCurrentNode().getTile();
+        int startRow = startTile.getRow();
+        int startColumn = startTile.getColumn();
+        if (startTile.getGold()>0){
+            state.pickUpGold();
+        }
+
+
+
+}
 }
