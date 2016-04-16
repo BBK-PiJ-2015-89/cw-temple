@@ -121,6 +121,7 @@ public class Explorer {
         int exitColumn = exitTile.getColumn();
         List<Node> nbrs = new ArrayList<>();
         Collection<Long> seen = new HashSet<>();
+        Collection<Node> nbrsOfExit = state.getExit().getNeighbours();
 
 
         while (state.getCurrentNode() != state.getExit()) {
@@ -135,37 +136,39 @@ public class Explorer {
 
             //get neighbours
             nbrs = allNodes.stream().filter(e -> (e.getTile().getRow() == currentRow - 1 && e.getTile().getColumn() == currentColumn) || (e.getTile().getRow() == currentRow + 1 && e.getTile().getColumn() == currentColumn) || (e.getTile().getColumn() == currentTile.getColumn() - 1 && e.getTile().getRow() == currentRow)
-                    || (e.getTile().getColumn() == currentTile.getColumn() + 1 && e.getTile().getRow() == currentRow)).collect(Collectors.toList());
+                    || (e.getTile().getColumn() == currentTile.getColumn() + 1 && e.getTile().getRow() == currentRow) && e.getTile().getType().equals(Tile.Type.FLOOR)).collect(Collectors.toList());
 
 
-            for (int i = 0; i < nbrs.size(); i++) {
-                if (!seen.contains(nbrs.get(i).getId()) && nbrs.get(i).getTile().getColumn() == currentColumn + 1 && nbrs.get(i).getTile().getType() == Tile.Type.FLOOR && nbrs.get(i).getTile().getRow() == currentRow) {
-                    System.out.println("Moving to: " + nbrs.get(i).getId() + " From: " + currentLocation.getId());
-                    seen.add(nbrs.get(i).getId());
-                    state.moveTo(nbrs.get(i));
-                    break;
-                } else if (!seen.contains(nbrs.get(i).getId()) && nbrs.get(i).getTile().getRow() == currentRow + 1 && nbrs.get(i).getTile().getType() == Tile.Type.FLOOR && nbrs.get(i).getTile().getColumn() == currentColumn) {
-                    System.out.println("Moving to: " + nbrs.get(i).getId() + " From: " + currentLocation.getId());
-                    seen.add(nbrs.get(i).getId());
-                    state.moveTo(nbrs.get(i));
-                    break;
-                } else if (!seen.contains(nbrs.get(i).getId()) && nbrs.get(i).getTile().getRow() == currentRow - 1 && nbrs.get(i).getTile().getType() == Tile.Type.FLOOR && nbrs.get(i).getTile().getColumn() == currentColumn) {
-                    System.out.println("Moving to: " + nbrs.get(i).getId() + " From: " + currentLocation.getId());
-                    seen.add(nbrs.get(i).getId());
-                    state.moveTo(nbrs.get(i));
-                    break;
-                } else if (!seen.contains(nbrs.get(i).getId()) && nbrs.get(i).getTile().getColumn() == currentColumn - 1 && nbrs.get(i).getTile().getType() == Tile.Type.FLOOR && nbrs.get(i).getTile().getRow() == currentRow) {
-                    System.out.println("Moving to: " + nbrs.get(i).getId() + " From: " + currentLocation.getId());
-                    seen.add(nbrs.get(i).getId());
-                    state.moveTo(nbrs.get(i));
-                    break;
-                } else if (seen.contains(state.getExit().getId()))
-                    state.moveTo(state.getExit());
+            for (Node nbr : nbrs) {
+                if (!seen.contains(nbr.getId()) && nbrsOfExit.contains(currentLocation)) {
                     System.out.println("Should be moving to exit");
+                    state.moveTo(state.getExit());
+                    break;
+                }
+                else if (!seen.contains(nbr.getId()) && nbr.getTile().getColumn() == currentColumn + 1 && nbr.getTile().getType() == Tile.Type.FLOOR && nbr.getTile().getRow() == currentRow) {
+                    System.out.println("Moving to: " + nbr.getId() + " From: " + currentLocation.getId());
+                    seen.add(nbr.getId());
+                    state.moveTo(nbr);
+                    break;
+                } else if (!seen.contains(nbr.getId()) && nbr.getTile().getRow() == currentRow + 1 && nbr.getTile().getType() == Tile.Type.FLOOR && nbr.getTile().getColumn() == currentColumn) {
+                    System.out.println("Moving to: " + nbr.getId() + " From: " + currentLocation.getId());
+                    seen.add(nbr.getId());
+                    state.moveTo(nbr);
+                    break;
+                } else if (!seen.contains(nbr.getId()) && nbr.getTile().getRow() == currentRow - 1 && nbr.getTile().getType() == Tile.Type.FLOOR && nbr.getTile().getColumn() == currentColumn) {
+                    System.out.println("Moving to: " + nbr.getId() + " From: " + currentLocation.getId());
+                    seen.add(nbr.getId());
+                    state.moveTo(nbr);
+                    break;
+                } else if (!seen.contains(nbr.getId()) && nbr.getTile().getColumn() == currentColumn - 1 && nbr.getTile().getType() == Tile.Type.FLOOR && nbr.getTile().getRow() == currentRow) {
+                    System.out.println("Moving to: " + nbr.getId() + " From: " + currentLocation.getId());
+                    seen.add(nbr.getId());
+                    state.moveTo(nbr);
+                    break;
                 }
 
-
             }
-        }
+
+    }
     }
 }
