@@ -47,6 +47,8 @@ public class Explorer {
         seen.add(state.getCurrentLocation()); // mark the start location as seen
         enqueueNeighbours(q, seen, initialPath, state); //add the neighbours to the queue (not seen and mark as seen).
 
+
+
         List<Long> oldPath = initialPath; //start from root for paths.
 
         while (state.getDistanceToTarget() > 0) {// while we are not sat on the orb.
@@ -71,7 +73,7 @@ public class Explorer {
             }
 
             enqueueNeighbours(q, seen, newPath, state); //queue new neighbours at destination.
-            oldPath = newPath; //store new path as old to use in next iterationm.
+            oldPath = newPath; //store new path as old to use in next iteration.
         }
     }
 
@@ -114,6 +116,12 @@ public class Explorer {
      */
     public void escape(EscapeState state) {
         //TODO: Escape from the cavern before time runs out
+
+
+
+
+
+
         Collection<Node> allNodes = state.getVertices();
         Node exitNode = state.getExit();
         Tile exitTile = exitNode.getTile();
@@ -135,32 +143,32 @@ public class Explorer {
             }
 
             //get neighbours
-            nbrs = allNodes.stream().filter(e -> (e.getTile().getRow() == currentRow - 1 && e.getTile().getColumn() == currentColumn) || (e.getTile().getRow() == currentRow + 1 && e.getTile().getColumn() == currentColumn) || (e.getTile().getColumn() == currentTile.getColumn() - 1 && e.getTile().getRow() == currentRow)
-                    || (e.getTile().getColumn() == currentTile.getColumn() + 1 && e.getTile().getRow() == currentRow) && e.getTile().getType().equals(Tile.Type.FLOOR)).collect(Collectors.toList());
+            nbrs = allNodes.stream().filter(e -> (isCurrentRow(currentRow - 1, e) && e.getTile().getColumn() == currentColumn) || (isCurrentRow(currentRow + 1, e) && e.getTile().getColumn() == currentColumn) || (e.getTile().getColumn() == currentTile.getColumn() - 1 && isCurrentRow(currentRow, e))
+                    || (e.getTile().getColumn() == currentTile.getColumn() + 1 && isCurrentRow(currentRow, e)) && e.getTile().getType().equals(Tile.Type.FLOOR)).collect(Collectors.toList());
 
 
             for (Node nbr : nbrs) {
-                if (!seen.contains(nbr.getId()) && nbrsOfExit.contains(currentLocation)) {
+                if (seenBefore(seen, nbr) && nbrsOfExit.contains(currentLocation)) {
                     System.out.println("Should be moving to exit");
                     state.moveTo(state.getExit());
                     break;
                 }
-                else if (!seen.contains(nbr.getId()) && nbr.getTile().getColumn() == currentColumn + 1 && nbr.getTile().getType() == Tile.Type.FLOOR && nbr.getTile().getRow() == currentRow) {
+                else if (seenBefore(seen, nbr) && nbr.getTile().getColumn() == currentColumn + 1 && isFloor(nbr) && isCurrentRow(currentRow, nbr)) {
                     System.out.println("Moving to: " + nbr.getId() + " From: " + currentLocation.getId());
                     seen.add(nbr.getId());
                     state.moveTo(nbr);
                     break;
-                } else if (!seen.contains(nbr.getId()) && nbr.getTile().getRow() == currentRow + 1 && nbr.getTile().getType() == Tile.Type.FLOOR && nbr.getTile().getColumn() == currentColumn) {
+                } else if (seenBefore(seen, nbr) && isCurrentRow(currentRow + 1, nbr) && isFloor(nbr) && nbr.getTile().getColumn() == currentColumn) {
                     System.out.println("Moving to: " + nbr.getId() + " From: " + currentLocation.getId());
                     seen.add(nbr.getId());
                     state.moveTo(nbr);
                     break;
-                } else if (!seen.contains(nbr.getId()) && nbr.getTile().getRow() == currentRow - 1 && nbr.getTile().getType() == Tile.Type.FLOOR && nbr.getTile().getColumn() == currentColumn) {
+                } else if (seenBefore(seen, nbr) && isCurrentRow(currentRow - 1, nbr) && isFloor(nbr) && isCurrentColumn(currentColumn, nbr)) {
                     System.out.println("Moving to: " + nbr.getId() + " From: " + currentLocation.getId());
                     seen.add(nbr.getId());
                     state.moveTo(nbr);
                     break;
-                } else if (!seen.contains(nbr.getId()) && nbr.getTile().getColumn() == currentColumn - 1 && nbr.getTile().getType() == Tile.Type.FLOOR && nbr.getTile().getRow() == currentRow) {
+                } else if (seenBefore(seen, nbr) && nbr.getTile().getColumn() == currentColumn - 1 && isFloor(nbr) && isCurrentRow(currentRow, nbr)) {
                     System.out.println("Moving to: " + nbr.getId() + " From: " + currentLocation.getId());
                     seen.add(nbr.getId());
                     state.moveTo(nbr);
@@ -171,4 +179,21 @@ public class Explorer {
 
     }
     }
+
+    private boolean isCurrentColumn(int currentColumn, Node nbr) {
+        return nbr.getTile().getColumn() == currentColumn;
+    }
+
+    private boolean isCurrentRow(int currentRow, Node nbr) {
+        return nbr.getTile().getRow() == currentRow;
+    }
+
+    private boolean isFloor(Node nbr) {
+        return nbr.getTile().getType() == Tile.Type.FLOOR;
+    }
+
+    private boolean seenBefore(Collection<Long> seen, Node nbr) {
+        return !seen.contains(nbr.getId());
+    }
+
 }
