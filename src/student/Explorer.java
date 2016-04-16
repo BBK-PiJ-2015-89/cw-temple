@@ -2,10 +2,8 @@ package student;
 
 import game.*;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Explorer {
 
@@ -116,15 +114,58 @@ public class Explorer {
      */
     public void escape(EscapeState state) {
         //TODO: Escape from the cavern before time runs out
-        Node startLocation = state.getCurrentNode();
-        Tile startTile= state.getCurrentNode().getTile();
-        int startRow = startTile.getRow();
-        int startColumn = startTile.getColumn();
-        if (startTile.getGold()>0){
-            state.pickUpGold();
+        Collection<Node> allNodes = state.getVertices();
+        Node exitNode = state.getExit();
+        Tile exitTile = exitNode.getTile();
+        int exitRow = exitTile.getRow();
+        int exitColumn = exitTile.getColumn();
+        List<Node> nbrs = new ArrayList<>();
+        Collection<Long> seen = new HashSet<>();
+
+
+        while (state.getCurrentNode() != state.getExit()) {
+            Node currentLocation = state.getCurrentNode();
+            Tile currentTile = state.getCurrentNode().getTile();
+            int currentRow = currentTile.getRow();
+            int currentColumn = currentTile.getColumn();
+
+            if (currentTile.getGold() > 0) { // pick up gold if this tile has any.
+                state.pickUpGold();
+            }
+
+            //get neighbours
+            nbrs = allNodes.stream().filter(e -> (e.getTile().getRow() == currentRow - 1 && e.getTile().getColumn() == currentColumn) || (e.getTile().getRow() == currentRow + 1 && e.getTile().getColumn() == currentColumn) || (e.getTile().getColumn() == currentTile.getColumn() - 1 && e.getTile().getRow() == currentRow)
+                    || (e.getTile().getColumn() == currentTile.getColumn() + 1 && e.getTile().getRow() == currentRow)).collect(Collectors.toList());
+
+
+            for (int i = 0; i < nbrs.size(); i++) {
+                if (!seen.contains(nbrs.get(i).getId()) && nbrs.get(i).getTile().getColumn() == currentColumn + 1 && nbrs.get(i).getTile().getType() == Tile.Type.FLOOR && nbrs.get(i).getTile().getRow() == currentRow) {
+                    System.out.println("Moving to: " + nbrs.get(i).getId() + " From: " + currentLocation.getId());
+                    seen.add(nbrs.get(i).getId());
+                    state.moveTo(nbrs.get(i));
+                    break;
+                } else if (!seen.contains(nbrs.get(i).getId()) && nbrs.get(i).getTile().getRow() == currentRow + 1 && nbrs.get(i).getTile().getType() == Tile.Type.FLOOR && nbrs.get(i).getTile().getColumn() == currentColumn) {
+                    System.out.println("Moving to: " + nbrs.get(i).getId() + " From: " + currentLocation.getId());
+                    seen.add(nbrs.get(i).getId());
+                    state.moveTo(nbrs.get(i));
+                    break;
+                } else if (!seen.contains(nbrs.get(i).getId()) && nbrs.get(i).getTile().getRow() == currentRow - 1 && nbrs.get(i).getTile().getType() == Tile.Type.FLOOR && nbrs.get(i).getTile().getColumn() == currentColumn) {
+                    System.out.println("Moving to: " + nbrs.get(i).getId() + " From: " + currentLocation.getId());
+                    seen.add(nbrs.get(i).getId());
+                    state.moveTo(nbrs.get(i));
+                    break;
+                } else if (!seen.contains(nbrs.get(i).getId()) && nbrs.get(i).getTile().getColumn() == currentColumn - 1 && nbrs.get(i).getTile().getType() == Tile.Type.FLOOR && nbrs.get(i).getTile().getRow() == currentRow) {
+                    System.out.println("Moving to: " + nbrs.get(i).getId() + " From: " + currentLocation.getId());
+                    seen.add(nbrs.get(i).getId());
+                    state.moveTo(nbrs.get(i));
+                    break;
+                } else if (seen.contains(state.getExit().getId()))
+                    state.moveTo(state.getExit());
+                    System.out.println("Should be moving to exit");
+                }
+
+
+            }
         }
-
-
-
-}
+    }
 }
