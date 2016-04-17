@@ -5,7 +5,7 @@ import game.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Explorer {
+public class Explorer{
 
     /**
      * Explore the cavern, trying to find the orb in as few steps as possible.
@@ -114,54 +114,95 @@ public class Explorer {
      *
      * @param state the information available at the current state
      */
-    public void escape(EscapeState state) {
+    public void escape(EscapeState state){
         //TODO: Escape from the cavern before time runs out
         Collection<Node> allNodes = state.getVertices();
         Queue<Path> q = new ArrayDeque<>();
+        Node exit = state.getExit();
         Node currentLocation = state.getCurrentNode();
-        Tile currentTile = currentLocation.getTile();
-        int currentRow = currentTile.getRow();
-        int currentColumn = currentTile.getColumn();
         List<Path> finishedRoutes = new ArrayList<>();
-
         List<Node> initialPath = new ArrayList<>(); //empty list for initial path
         initialPath.add(currentLocation); //add root of tree
-        int goldGained = currentTile.getGold();
-        q.add(new Path(goldGained, 0, initialPath));
+        q.add(new Path(0, 0, initialPath)); //all with have same gold and count from here so not point adding.
 
-        while (q.size()>0){
-            Path newPath = q.poll();
-            Node current = newPath.getPath().get(newPath.getPath().size()-1);
+       // while (q.size()>0){
+       // }
+        try {
+            Thread t = new Thread() {
+                public void run() {
+                    while (q.size() >= 1 && finishedRoutes.size() <= 10){
+                        Path newPath = q.poll();
+                        Node current = newPath.getPath().get(newPath.getPath().size() - 1);
+                        Collection<Node> nbrs = getNeighbours(allNodes, current.getTile(), current.getTile().getRow(), current.getTile().getColumn());
+                        addingNeighbours(state, q, finishedRoutes, newPath, current, nbrs);
 
-            Collection<Node> nbrs = getNeighbours(allNodes, current.getTile(), current.getTile().getRow(), current.getTile().getColumn());
-            for(Node nbr : nbrs){
-                if(newPath.getPath().contains(nbr)){
-                    continue; //if we have no where left to visit then the path will be deleted from the queue.
-                }
-                Edge thisEdge = nbr.getEdge(newPath.getPath().get(newPath.getPath().size()-1));
-                if(newPath.getPath().contains(state.getExit())){
-                    int newGold = nbr.getTile().getGold();
-                    int oldGoldCount = newPath.getGoldCount();
-                    newPath.setGoldCount(oldGoldCount + newGold);
-                    int oldTime = newPath.getTimeTaken(); // retrieve current time taken
-                    newPath.setTimeTaken(oldTime+thisEdge.length);
-                    newPath.getPath().add(nbr);
-                    finishedRoutes.add(newPath); //if the neighbour we select is the exit, then this route has finished.
-                    continue;
-                }
-
-                if (newPath.getTimeTaken() + thisEdge.length > state.getTimeRemaining()){
-                    continue;
-                }
-                int oldTime = newPath.getTimeTaken(); // retrieve current time taken
-                newPath.setTimeTaken(oldTime+thisEdge.length);
-                newPath.getPath().add(nbr);
-                int newGold = nbr.getTile().getGold(); //retrieve current gold on this neighbour tile.
-                int oldGoldCount = newPath.getGoldCount(); //retrieve total gold so far.
-                newPath.setGoldCount(oldGoldCount + newGold); //set new gold count.
-                q.add(newPath);
+                    }}
+            };
+            t.start();
+            t.join();
+        }
+        catch (InterruptedException e){
+            e.printStackTrace();
+        }
+        Path bestPath = findBestRoute(finishedRoutes);
+        //System.out.println("Expected Gold: " + bestPath.getGoldCount() + " Expected TimeTaken: " + bestPath.getTimeTaken());
+        for (int i = 1; i <bestPath.getPath().size() ; i++) {
+            System.out.println("moving to: " + bestPath.getPath().get(i).getId() + " from: " + state.getCurrentNode().getId());
+            state.moveTo(bestPath.getPath().get(i));
+            if(state.getCurrentNode().getTile().getGold()>0){
+                state.pickUpGold();
             }
         }
+
+    }
+
+    private void addingNeighbours(EscapeState state, Queue<Path> q, List<Path> finishedRoutes, Path newPath, Node current, Collection<Node> nbrs) {
+        for(Node nbr : nbrs){
+            Path originalPath = (new Path(newPath.getGoldCount(), newPath.getTimeTaken(), new ArrayList<>(newPath.getPath())));
+            Edge thisEdge = nbr.getEdge(current);
+            if (originalPath.getTimeTaken() + thisEdge.length > state.getTimeRemaining()){
+                //System.out.println("Deleted Route");
+                continue;
+            }
+            if(nbr.equals(state.getExit())){
+                System.out.println("equals exit");
+                int newGold = nbr.getTile().getGold();
+                int oldGoldCount = originalPath.getGoldCount();
+                originalPath.setGoldCount(oldGoldCount + newGold);
+                int oldTime = originalPath.getTimeTaken(); // retrieve current time taken
+                originalPath.setTimeTaken(oldTime + thisEdge.length);
+                originalPath.getPath().add(nbr);
+                finishedRoutes.add(originalPath); //if the neighbour we select is the exit, then this route has finished.
+                continue;
+            }
+            if(originalPath.getPath().contains(nbr)){
+                //System.out.println("remove path");
+                continue; //if we've seen neighbour we won't add it to path again.
+                }
+
+                //System.out.println("Adding to path");
+                int oldTime = originalPath.getTimeTaken(); // retrieve current time taken
+                originalPath.setTimeTaken(oldTime + thisEdge.length); //set time
+                originalPath.getPath().add(nbr);
+                int newGold = nbr.getTile().getGold(); //retrieve current gold on this neighbour tile.
+                int oldGoldCount = originalPath.getGoldCount(); //retrieve total gold so far.
+                originalPath.setGoldCount(oldGoldCount + newGold); //set new gold count.
+                q.add(originalPath);
+            }
+    }
+
+    private Path findBestRoute(List<Path> successfulRoutes){
+        int maxIndex = 0;
+        int maxScore = 0;
+        for (int i = 0; i <successfulRoutes.size() ; i++) {
+            if (successfulRoutes.get(i).getGoldCount() > maxScore) {
+                maxIndex = i;
+                maxScore = successfulRoutes.get(i).getGoldCount();
+            }
+        }
+
+        return successfulRoutes.get(maxIndex);
+
 
     }
 
@@ -170,4 +211,6 @@ public class Explorer {
         return allNodes.stream().filter(e -> (e.getTile().getRow() == currentRow - 1 && e.getTile().getColumn() == currentColumn) || (e.getTile().getRow() == currentRow + 1 && e.getTile().getColumn() == currentColumn) || (e.getTile().getColumn() == currentTile.getColumn() - 1 && e.getTile().getRow() == currentRow)
                     || (e.getTile().getColumn() == currentTile.getColumn() + 1 && e.getTile().getRow() == currentRow) && e.getTile().getType().equals(Tile.Type.FLOOR)).collect(Collectors.toList());
     }
+
+
 }
