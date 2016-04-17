@@ -132,15 +132,15 @@ public class Explorer {
                 Node current = newPath.getPath().get(newPath.getPath().size() - 1); //change current node to last one on path pulled off queue.
                 addingNeighbours(state, q, finishedRoutes, newPath, current, current.getNeighbours()); //add the neighbours to the queue, if neighbour is an exit, add it and show it as a finished queue.
         }*/
-        System.out.println("finishedRouteSize: " + finishedRoutes.size());
+        //System.out.println("finishedRouteSize: " + finishedRoutes.size());
         if (finishedRoutes.size() == 0) {
-            System.out.println("Starting process of recall");
+            //System.out.println("Starting process of recall");
             PriorityQueue<Path> pq = new PriorityQueueImpl<>();
             Collection<Node> seenSecond = new HashSet<>();
             pq.add(new Path(0, 0, initialPath), 0); //all with have same gold and count from here so not point adding.
             searchSolution(state, pq, finishedRoutes, seenSecond, true);
         }
-        System.out.println("finishedRouteSize: " + finishedRoutes.size());
+        //System.out.println("finishedRouteSize: " + finishedRoutes.size());
             Path bestPath = findBestRoute(finishedRoutes);
             //System.out.println("Expected Gold: " + bestPath.getGoldCount() + " Expected TimeTaken: " + bestPath.getTimeTaken());
             for (int i = 1; i < bestPath.getPath().size(); i++) {
