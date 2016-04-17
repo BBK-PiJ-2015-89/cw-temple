@@ -128,57 +128,18 @@ public class Explorer{
         // }
 
         while (q.size() > 0) {
-            Thread a = new Thread();
-            Thread b = new Thread();
-            Thread c = new Thread();
-            Thread d = new Thread();
-            Thread e = new Thread();
-            Thread f = new Thread();
-            Thread g = new Thread();
-            Thread h = new Thread();
-            Thread j = new Thread();
-            Thread l = new Thread();
-            Thread k = new Thread();
-            Thread t = new Thread() {
-                public void run() {
                     //System.out.println(q.size() + " queue size");
                     Path newPath = q.poll(); //pull path of queue
                     Node current = newPath.getPath().get(newPath.getPath().size() - 1); //change current node to last one on path pulled off queue.
                     addingNeighbours(state, q, finishedRoutes, newPath, current, current.getNeighbours(), seen); //add the neighbours to the queue, if neighbour is an exit, add it and show it as a finished queue.
                 }
-
-            };
-            a.start();
-            b.start();
-            c.start();
-            d.start();
-            e.start();
-            f.start();
-            g.start();
-            h.start();
-            j.start();
-            l.start();
-            k.start();
-            t.start();
-
-            a.join();
-            b.join();
-            c.join();
-            e.join();
-            f.join();
-            g.join();
-            h.join();
-            j.join();
-            l.join();
-            k.join();
-            t.join();
        /* while (q.size()>0) {
                 //System.out.println(q.size() + " queue size");
                 Path newPath = q.poll(); //pull path of queue
                 Node current = newPath.getPath().get(newPath.getPath().size() - 1); //change current node to last one on path pulled off queue.
                 addingNeighbours(state, q, finishedRoutes, newPath, current, current.getNeighbours()); //add the neighbours to the queue, if neighbour is an exit, add it and show it as a finished queue.
         }*/
-        }
+
         Path bestPath = findBestRoute(finishedRoutes);
         //System.out.println("Expected Gold: " + bestPath.getGoldCount() + " Expected TimeTaken: " + bestPath.getTimeTaken());
         for (int i = 1; i < bestPath.getPath().size(); i++) {
@@ -212,11 +173,10 @@ public class Explorer{
                             if (originalPath.getPath().contains(tnbr)) {
                                 seen.add(tnbr);
                             } else {
-                                break;
+                                continue;
                             }
                         }
                     }
-                    continue;
                 }
                 if (nbr.equals(state.getExit())) {
                     ////System.out.println("equals exit");
@@ -230,7 +190,7 @@ public class Explorer{
                 ////System.out.println("AFTER" + originalPath.getPath());
                 //System.out.println(originalPath.timeTaken);
 
-                q.add(originalPath, -originalPath.timeTaken);
+                q.add(originalPath, originalPath.timeTaken);
 
             }
         }
