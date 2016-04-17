@@ -114,7 +114,7 @@ public class Explorer{
      *
      * @param state the information available at the current state
      */
-    public void escape(EscapeState state){
+    public void escape(EscapeState state) throws InterruptedException {
         //TODO: Escape from the cavern before time runs out
         Collection<Node> allNodes = state.getVertices();
         Queue<Path> q = new ArrayDeque<>();
@@ -127,23 +127,18 @@ public class Explorer{
 
        // while (q.size()>0){
        // }
-        try {
-            Thread t = new Thread() {
-                public void run() {
-                    while (q.size() >= 1 && finishedRoutes.size() <= 10){
-                        Path newPath = q.poll();
-                        Node current = newPath.getPath().get(newPath.getPath().size() - 1);
-                        Collection<Node> nbrs = getNeighbours(allNodes, current.getTile(), current.getTile().getRow(), current.getTile().getColumn());
-                        addingNeighbours(state, q, finishedRoutes, newPath, current, nbrs);
+        while (finishedRoutes.size() < 100|| !q.isEmpty()) {
+                Thread t = new Thread() {
+                    public void run() {
+                        Path newPath = q.poll(); //pull path of queue
+                        Node current = newPath.getPath().get(newPath.getPath().size() - 1); //change current node to last one on path pulled off queue.
+                        Collection<Node> nbrs = getNeighbours(allNodes, current.getTile(), current.getTile().getRow(), current.getTile().getColumn()); //get the nieghbours
+                        addingNeighbours(state, q, finishedRoutes, newPath, current, nbrs); //add the neighbours to the queue
+                    }
+                };
+                t.start();
+            }
 
-                    }}
-            };
-            t.start();
-            t.join();
-        }
-        catch (InterruptedException e){
-            e.printStackTrace();
-        }
         Path bestPath = findBestRoute(finishedRoutes);
         //System.out.println("Expected Gold: " + bestPath.getGoldCount() + " Expected TimeTaken: " + bestPath.getTimeTaken());
         for (int i = 1; i <bestPath.getPath().size() ; i++) {
@@ -166,12 +161,7 @@ public class Explorer{
             }
             if(nbr.equals(state.getExit())){
                 System.out.println("equals exit");
-                int newGold = nbr.getTile().getGold();
-                int oldGoldCount = originalPath.getGoldCount();
-                originalPath.setGoldCount(oldGoldCount + newGold);
-                int oldTime = originalPath.getTimeTaken(); // retrieve current time taken
-                originalPath.setTimeTaken(oldTime + thisEdge.length);
-                originalPath.getPath().add(nbr);
+                updateGoldAndTimeTaken(nbr, originalPath, thisEdge);
                 finishedRoutes.add(originalPath); //if the neighbour we select is the exit, then this route has finished.
                 continue;
             }
@@ -181,14 +171,18 @@ public class Explorer{
                 }
 
                 //System.out.println("Adding to path");
-                int oldTime = originalPath.getTimeTaken(); // retrieve current time taken
-                originalPath.setTimeTaken(oldTime + thisEdge.length); //set time
-                originalPath.getPath().add(nbr);
-                int newGold = nbr.getTile().getGold(); //retrieve current gold on this neighbour tile.
-                int oldGoldCount = originalPath.getGoldCount(); //retrieve total gold so far.
-                originalPath.setGoldCount(oldGoldCount + newGold); //set new gold count.
+            updateGoldAndTimeTaken(nbr, originalPath, thisEdge);
                 q.add(originalPath);
             }
+    }
+
+    private void updateGoldAndTimeTaken(Node nbr, Path originalPath, Edge thisEdge) {
+        int newGold = nbr.getTile().getGold();
+        int oldGoldCount = originalPath.getGoldCount();
+        originalPath.setGoldCount(oldGoldCount + newGold);
+        int oldTime = originalPath.getTimeTaken(); // retrieve current time taken
+        originalPath.setTimeTaken(oldTime + thisEdge.length);
+        originalPath.getPath().add(nbr);
     }
 
     private Path findBestRoute(List<Path> successfulRoutes){
