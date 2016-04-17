@@ -5,7 +5,7 @@ import game.*;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class Explorer{
+public class Explorer {
 
     /**
      * Explore the cavern, trying to find the orb in as few steps as possible.
@@ -46,7 +46,6 @@ public class Explorer{
         initialPath.add(state.getCurrentLocation()); //add root of tree
         seen.add(state.getCurrentLocation()); // mark the start location as seen
         enqueueNeighbours(q, seen, initialPath, state); //add the neighbours to the queue (not seen and mark as seen).
-
 
 
         List<Long> oldPath = initialPath; //start from root for paths.
@@ -123,35 +122,47 @@ public class Explorer{
         List<Node> initialPath = new ArrayList<>(); //empty list for initial path
         initialPath.add(currentLocation); //add root of tree
         q.add(new Path(0, 0, initialPath), 0); //all with have same gold and count from here so not point adding.
-
         // while (q.size()>0){
         // }
 
-        while (q.size() > 0) {
-                    //System.out.println(q.size() + " queue size");
-                    Path newPath = q.poll(); //pull path of queue
-                    Node current = newPath.getPath().get(newPath.getPath().size() - 1); //change current node to last one on path pulled off queue.
-                    addingNeighbours(state, q, finishedRoutes, newPath, current, current.getNeighbours(), seen); //add the neighbours to the queue, if neighbour is an exit, add it and show it as a finished queue.
-                }
+        searchSolution(state, q, finishedRoutes, seen, false);
        /* while (q.size()>0) {
                 //System.out.println(q.size() + " queue size");
                 Path newPath = q.poll(); //pull path of queue
                 Node current = newPath.getPath().get(newPath.getPath().size() - 1); //change current node to last one on path pulled off queue.
                 addingNeighbours(state, q, finishedRoutes, newPath, current, current.getNeighbours()); //add the neighbours to the queue, if neighbour is an exit, add it and show it as a finished queue.
         }*/
-
-        Path bestPath = findBestRoute(finishedRoutes);
-        //System.out.println("Expected Gold: " + bestPath.getGoldCount() + " Expected TimeTaken: " + bestPath.getTimeTaken());
-        for (int i = 1; i < bestPath.getPath().size(); i++) {
-            //System.out.println("moving to: " + bestPath.getPath().get(i).getId() + " from: " + state.getCurrentNode().getId());
-            state.moveTo(bestPath.getPath().get(i));
-            if (state.getCurrentNode().getTile().getGold() > 0) {
-                state.pickUpGold();
+        System.out.println("finishedRouteSize: " + finishedRoutes.size());
+        if (finishedRoutes.size() == 0) {
+            System.out.println("Starting process of recall");
+            PriorityQueue<Path> pq = new PriorityQueueImpl<>();
+            Collection<Node> seenSecond = new HashSet<>();
+            pq.add(new Path(0, 0, initialPath), 0); //all with have same gold and count from here so not point adding.
+            searchSolution(state, pq, finishedRoutes, seenSecond, true);
+        }
+        System.out.println("finishedRouteSize: " + finishedRoutes.size());
+            Path bestPath = findBestRoute(finishedRoutes);
+            //System.out.println("Expected Gold: " + bestPath.getGoldCount() + " Expected TimeTaken: " + bestPath.getTimeTaken());
+            for (int i = 1; i < bestPath.getPath().size(); i++) {
+                //System.out.println("moving to: " + bestPath.getPath().get(i).getId() + " from: " + state.getCurrentNode().getId());
+                state.moveTo(bestPath.getPath().get(i));
+                if (state.getCurrentNode().getTile().getGold() > 0) {
+                    state.pickUpGold();
+                }
             }
+    }
+
+    private void searchSolution(EscapeState state, PriorityQueue<Path> q, List<Path> finishedRoutes, Collection<Node> seen, boolean emergencyExit) {
+        while (q.size() > 0) {
+            //System.out.println(q.size() + " queue size");
+            Path newPath = q.poll(); //pull path of queue
+            Node current = newPath.getPath().get(newPath.getPath().size() - 1); //change current node to last one on path pulled off queue.
+            addingNeighbours(state, q, finishedRoutes, newPath, current, current.getNeighbours(), seen, emergencyExit); //add the neighbours to the queue, if neighbour is an exit, add it and show it as a finished queue.
         }
     }
-//check Seed : -4606386759928623632
-    private void addingNeighbours(EscapeState state, PriorityQueue<Path> q, List<Path> finishedRoutes, Path newPath, Node current, Collection<Node> nbrs, Collection<Node> seen) {
+
+    //check Seed : -4606386759928623632
+    private void addingNeighbours(EscapeState state, PriorityQueue<Path> q, List<Path> finishedRoutes, Path newPath, Node current, Collection<Node> nbrs, Collection<Node> seen, boolean emergencyExit) {
         for (Node nbr : nbrs) {
             Path originalPath = (new Path(newPath.getGoldCount(), newPath.getTimeTaken(), new ArrayList<>(newPath.getPath())));
             ////System.out.println("Neighbour " + nbr.getId() + " Exit " + state.getExit().getId());
@@ -161,39 +172,41 @@ public class Explorer{
                 continue;
             }
 
-            if(seen.contains(nbr)){
+            if (seen.contains(nbr)) {
                 continue;
             }
-                if (originalPath.getPath().contains(nbr)) {
-                    //System.out.println("Loop");
-                    //continue;
-                    for (int i = originalPath.getPath().size() - 1; i >= 0; i--) {
-                        Collection<Node> tempNbrs = originalPath.getPath().get(i).getNeighbours();
-                        for (Node tnbr : tempNbrs) {
-                            if (originalPath.getPath().contains(tnbr)) {
-                                seen.add(tnbr);
-                            } else {
-                                continue;
-                            }
+            if (originalPath.getPath().contains(nbr)) {
+                //System.out.println("Loop");
+                //continue;
+                for (int i = originalPath.getPath().size() - 1; i >= 0; i--) {
+                    Collection<Node> tempNbrs = originalPath.getPath().get(i).getNeighbours();
+                    for (Node tnbr : tempNbrs) {
+                        if (originalPath.getPath().contains(tnbr)) {
+                            seen.add(tnbr);
+                        } else {
+                            continue;
                         }
                     }
                 }
-                if (nbr.equals(state.getExit())) {
-                    ////System.out.println("equals exit");
-                    updateGoldAndTimeTaken(nbr, originalPath, thisEdge);
-                    finishedRoutes.add(originalPath); //if the neighbour we select is the exit, then this route has finished.
-                    continue;
-                }
-                //System.out.println("Adding to path before " + originalPath.getTimeTaken());
+            }
+            if (nbr.equals(state.getExit())) {
+                ////System.out.println("equals exit");
                 updateGoldAndTimeTaken(nbr, originalPath, thisEdge);
-                ////System.out.println("Adding to path after " + originalPath.getTimeTaken());
-                ////System.out.println("AFTER" + originalPath.getPath());
-                //System.out.println(originalPath.timeTaken);
-
+                finishedRoutes.add(originalPath); //if the neighbour we select is the exit, then this route has finished.
+                continue;
+            }
+            //System.out.println("Adding to path before " + originalPath.getTimeTaken());
+            updateGoldAndTimeTaken(nbr, originalPath, thisEdge);
+            ////System.out.println("Adding to path after " + originalPath.getTimeTaken());
+            ////System.out.println("AFTER" + originalPath.getPath());
+            //System.out.println(originalPath.timeTaken);
+            if (emergencyExit) {
                 q.add(originalPath, originalPath.timeTaken);
-
+            } else {
+                q.add(originalPath, -originalPath.timeTaken);
             }
         }
+    }
 
     private void updateGoldAndTimeTaken(Node nbr, Path originalPath, Edge thisEdge) {
         int newGold = nbr.getTile().getGold();
@@ -205,10 +218,10 @@ public class Explorer{
         originalPath.getPath().add(nbr);
     }
 
-    private Path findBestRoute(List<Path> successfulRoutes){
+    private Path findBestRoute(List<Path> successfulRoutes) {
         int maxIndex = 0;
         int maxScore = 0;
-        for (int i = 0; i <successfulRoutes.size() ; i++) {
+        for (int i = 0; i < successfulRoutes.size(); i++) {
             if (successfulRoutes.get(i).getGoldCount() > maxScore) {
                 maxIndex = i;
                 maxScore = successfulRoutes.get(i).getGoldCount();
