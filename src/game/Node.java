@@ -1,9 +1,6 @@
 package game;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * An instance represents a node in the graph --the cavern.
@@ -121,4 +118,5 @@ public class Node {
     public int hashCode() {
         return Objects.hash(id);
     }
+
 }

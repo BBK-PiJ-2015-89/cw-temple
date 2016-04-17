@@ -3,7 +3,7 @@ package student;
 import game.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Explorer{
 
@@ -59,16 +59,16 @@ public class Explorer{
                 shared++;
             }
 
-            System.out.println("Going from path: " + oldPath);
-            System.out.println("Going to path: " + newPath);
+            //System.out.println("Going from path: " + oldPath);
+            //System.out.println("Going to path: " + newPath);
 
             for (int j = oldPath.size() - 2; j >= shared - 1; j--) { // moving up tree to find shared node.
-                System.out.println("Reverting to: " + oldPath.get(j));
+                //System.out.println("Reverting to: " + oldPath.get(j));
                 state.moveTo(oldPath.get(j));
             }
 
             for (int j = shared; j < newPath.size(); j++) { //moving from shared node to destination.
-                System.out.println("Moving to: " + newPath.get(j));
+                //System.out.println("Moving to: " + newPath.get(j));
                 state.moveTo(newPath.get(j));
             }
 
@@ -116,65 +116,123 @@ public class Explorer{
      */
     public void escape(EscapeState state) throws InterruptedException {
         //TODO: Escape from the cavern before time runs out
-        Collection<Node> allNodes = state.getVertices();
-        Queue<Path> q = new ArrayDeque<>();
-        Node exit = state.getExit();
+        PriorityQueue<Path> q = new PriorityQueueImpl<>();
         Node currentLocation = state.getCurrentNode();
-        List<Path> finishedRoutes = new ArrayList<>();
+        List<Path> finishedRoutes = new CopyOnWriteArrayList<>();
+        Collection<Node> seen = new HashSet<>();
         List<Node> initialPath = new ArrayList<>(); //empty list for initial path
         initialPath.add(currentLocation); //add root of tree
-        q.add(new Path(0, 0, initialPath)); //all with have same gold and count from here so not point adding.
+        q.add(new Path(0, 0, initialPath), 0); //all with have same gold and count from here so not point adding.
 
-       // while (q.size()>0){
-       // }
-        while (finishedRoutes.size() < 100|| !q.isEmpty()) {
-                Thread t = new Thread() {
-                    public void run() {
-                        Path newPath = q.poll(); //pull path of queue
-                        Node current = newPath.getPath().get(newPath.getPath().size() - 1); //change current node to last one on path pulled off queue.
-                        Collection<Node> nbrs = getNeighbours(allNodes, current.getTile(), current.getTile().getRow(), current.getTile().getColumn()); //get the nieghbours
-                        addingNeighbours(state, q, finishedRoutes, newPath, current, nbrs); //add the neighbours to the queue
-                    }
-                };
-                t.start();
-            }
+        // while (q.size()>0){
+        // }
 
+        while (q.size() > 0) {
+            Thread a = new Thread();
+            Thread b = new Thread();
+            Thread c = new Thread();
+            Thread d = new Thread();
+            Thread e = new Thread();
+            Thread f = new Thread();
+            Thread g = new Thread();
+            Thread h = new Thread();
+            Thread j = new Thread();
+            Thread l = new Thread();
+            Thread k = new Thread();
+            Thread t = new Thread() {
+                public void run() {
+                    //System.out.println(q.size() + " queue size");
+                    Path newPath = q.poll(); //pull path of queue
+                    Node current = newPath.getPath().get(newPath.getPath().size() - 1); //change current node to last one on path pulled off queue.
+                    addingNeighbours(state, q, finishedRoutes, newPath, current, current.getNeighbours(), seen); //add the neighbours to the queue, if neighbour is an exit, add it and show it as a finished queue.
+                }
+
+            };
+            a.start();
+            b.start();
+            c.start();
+            d.start();
+            e.start();
+            f.start();
+            g.start();
+            h.start();
+            j.start();
+            l.start();
+            k.start();
+            t.start();
+
+            a.join();
+            b.join();
+            c.join();
+            e.join();
+            f.join();
+            g.join();
+            h.join();
+            j.join();
+            l.join();
+            k.join();
+            t.join();
+       /* while (q.size()>0) {
+                //System.out.println(q.size() + " queue size");
+                Path newPath = q.poll(); //pull path of queue
+                Node current = newPath.getPath().get(newPath.getPath().size() - 1); //change current node to last one on path pulled off queue.
+                addingNeighbours(state, q, finishedRoutes, newPath, current, current.getNeighbours()); //add the neighbours to the queue, if neighbour is an exit, add it and show it as a finished queue.
+        }*/
+        }
         Path bestPath = findBestRoute(finishedRoutes);
         //System.out.println("Expected Gold: " + bestPath.getGoldCount() + " Expected TimeTaken: " + bestPath.getTimeTaken());
-        for (int i = 1; i <bestPath.getPath().size() ; i++) {
-            System.out.println("moving to: " + bestPath.getPath().get(i).getId() + " from: " + state.getCurrentNode().getId());
+        for (int i = 1; i < bestPath.getPath().size(); i++) {
+            //System.out.println("moving to: " + bestPath.getPath().get(i).getId() + " from: " + state.getCurrentNode().getId());
             state.moveTo(bestPath.getPath().get(i));
-            if(state.getCurrentNode().getTile().getGold()>0){
+            if (state.getCurrentNode().getTile().getGold() > 0) {
                 state.pickUpGold();
             }
         }
-
     }
-
-    private void addingNeighbours(EscapeState state, Queue<Path> q, List<Path> finishedRoutes, Path newPath, Node current, Collection<Node> nbrs) {
-        for(Node nbr : nbrs){
+//check Seed : -4606386759928623632
+    private void addingNeighbours(EscapeState state, PriorityQueue<Path> q, List<Path> finishedRoutes, Path newPath, Node current, Collection<Node> nbrs, Collection<Node> seen) {
+        for (Node nbr : nbrs) {
             Path originalPath = (new Path(newPath.getGoldCount(), newPath.getTimeTaken(), new ArrayList<>(newPath.getPath())));
-            Edge thisEdge = nbr.getEdge(current);
-            if (originalPath.getTimeTaken() + thisEdge.length > state.getTimeRemaining()){
-                //System.out.println("Deleted Route");
+            ////System.out.println("Neighbour " + nbr.getId() + " Exit " + state.getExit().getId());
+            Edge thisEdge = current.getEdge(nbr);
+            if (originalPath.getTimeTaken() + thisEdge.length > state.getTimeRemaining()) {
+                ////System.out.println("Kill");
                 continue;
             }
-            if(nbr.equals(state.getExit())){
-                System.out.println("equals exit");
-                updateGoldAndTimeTaken(nbr, originalPath, thisEdge);
-                finishedRoutes.add(originalPath); //if the neighbour we select is the exit, then this route has finished.
-                continue;
-            }
-            if(originalPath.getPath().contains(nbr)){
-                //System.out.println("remove path");
-                continue; //if we've seen neighbour we won't add it to path again.
-                }
 
-                //System.out.println("Adding to path");
-            updateGoldAndTimeTaken(nbr, originalPath, thisEdge);
-                q.add(originalPath);
+            if(seen.contains(nbr)){
+                continue;
             }
-    }
+                if (originalPath.getPath().contains(nbr)) {
+                    //System.out.println("Loop");
+                    //continue;
+                    for (int i = originalPath.getPath().size() - 1; i >= 0; i--) {
+                        Collection<Node> tempNbrs = originalPath.getPath().get(i).getNeighbours();
+                        for (Node tnbr : tempNbrs) {
+                            if (originalPath.getPath().contains(tnbr)) {
+                                seen.add(tnbr);
+                            } else {
+                                continue;
+                            }
+                        }
+                    }
+                }
+                if (nbr.equals(state.getExit())) {
+                    ////System.out.println("equals exit");
+                    updateGoldAndTimeTaken(nbr, originalPath, thisEdge);
+                    finishedRoutes.add(originalPath); //if the neighbour we select is the exit, then this route has finished.
+                    continue;
+                }
+                //System.out.println("Adding to path before " + originalPath.getTimeTaken());
+                updateGoldAndTimeTaken(nbr, originalPath, thisEdge);
+                ////System.out.println("Adding to path after " + originalPath.getTimeTaken());
+                ////System.out.println("AFTER" + originalPath.getPath());
+                //System.out.println(originalPath.timeTaken);
+
+                q.add(originalPath, -originalPath.timeTaken);
+
+            }
+        }
 
     private void updateGoldAndTimeTaken(Node nbr, Path originalPath, Edge thisEdge) {
         int newGold = nbr.getTile().getGold();
@@ -182,6 +240,7 @@ public class Explorer{
         originalPath.setGoldCount(oldGoldCount + newGold);
         int oldTime = originalPath.getTimeTaken(); // retrieve current time taken
         originalPath.setTimeTaken(oldTime + thisEdge.length);
+        //System.out.println("OldTime: " + oldTime + "additionalTime: " + thisEdge.length + " = " + originalPath.getTimeTaken() + " total Time" );
         originalPath.getPath().add(nbr);
     }
 
@@ -199,12 +258,5 @@ public class Explorer{
 
 
     }
-
-    private Collection<Node> getNeighbours(Collection<Node> allNodes, Tile currentTile, int currentRow, int currentColumn) {
-
-        return allNodes.stream().filter(e -> (e.getTile().getRow() == currentRow - 1 && e.getTile().getColumn() == currentColumn) || (e.getTile().getRow() == currentRow + 1 && e.getTile().getColumn() == currentColumn) || (e.getTile().getColumn() == currentTile.getColumn() - 1 && e.getTile().getRow() == currentRow)
-                    || (e.getTile().getColumn() == currentTile.getColumn() + 1 && e.getTile().getRow() == currentRow) && e.getTile().getType().equals(Tile.Type.FLOOR)).collect(Collectors.toList());
-    }
-
 
 }

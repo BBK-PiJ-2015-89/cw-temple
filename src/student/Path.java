@@ -39,4 +39,10 @@ public class Path {
     public void setTimeTaken(int timeTaken) {
         this.timeTaken = timeTaken;
     }
+
+    @Override
+    public String toString() {
+        return path.toString();
+    }
 }
+
