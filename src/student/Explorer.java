@@ -178,7 +178,7 @@ public class Explorer {
             if (originalPath.getPath().contains(nbr)) {
                 //System.out.println("Loop");
                 //continue;
-                for (int i = originalPath.getPath().size() - 1; i >= 0; i--) {
+                for (int i = originalPath.getPath().size() - 1; i >=0; i--) {
                     Collection<Node> tempNbrs = originalPath.getPath().get(i).getNeighbours();
                     for (Node tnbr : tempNbrs) {
                         if (originalPath.getPath().contains(tnbr)) {
@@ -222,6 +222,7 @@ public class Explorer {
         int maxIndex = 0;
         int maxScore = 0;
         for (int i = 0; i < successfulRoutes.size(); i++) {
+            //System.out.println(successfulRoutes.get(i).getGoldCount() + "GoldCount");
             if (successfulRoutes.get(i).getGoldCount() > maxScore) {
                 maxIndex = i;
                 maxScore = successfulRoutes.get(i).getGoldCount();
