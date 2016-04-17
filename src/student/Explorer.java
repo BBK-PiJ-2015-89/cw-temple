@@ -212,10 +212,11 @@ public class Explorer{
                             if (originalPath.getPath().contains(tnbr)) {
                                 seen.add(tnbr);
                             } else {
-                                continue;
+                                break;
                             }
                         }
                     }
+                    continue;
                 }
                 if (nbr.equals(state.getExit())) {
                     ////System.out.println("equals exit");
