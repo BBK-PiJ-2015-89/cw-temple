@@ -143,7 +143,10 @@ public class Explorer {
         //System.out.println("finishedRouteSize: " + finishedRoutes.size());
             Path bestPath = findBestRoute(finishedRoutes);
             //System.out.println("Expected Gold: " + bestPath.getGoldCount() + " Expected TimeTaken: " + bestPath.getTimeTaken());
-            for (int i = 1; i < bestPath.getPath().size(); i++) {
+        if (state.getCurrentNode().getTile().getGold()>0){
+            state.pickUpGold();
+        }
+        for (int i = 1; i < bestPath.getPath().size(); i++) {
                 //System.out.println("moving to: " + bestPath.getPath().get(i).getId() + " from: " + state.getCurrentNode().getId());
                 state.moveTo(bestPath.getPath().get(i));
                 if (state.getCurrentNode().getTile().getGold() > 0) {
@@ -173,6 +176,7 @@ public class Explorer {
             }
 
             if (seen.contains(nbr)) {
+                //System.out.println("seen");
                 continue;
             }
             if (originalPath.getPath().contains(nbr)) {
@@ -183,8 +187,6 @@ public class Explorer {
                     for (Node tnbr : tempNbrs) {
                         if (originalPath.getPath().contains(tnbr)) {
                             seen.add(tnbr);
-                        } else {
-                            continue;
                         }
                     }
                 }
