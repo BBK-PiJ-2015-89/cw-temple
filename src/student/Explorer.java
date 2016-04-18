@@ -203,9 +203,9 @@ public class Explorer {
             ////System.out.println("AFTER" + originalPath.getPath());
             //System.out.println(originalPath.timeTaken);
             if (emergencyExit) {
-                q.add(originalPath, originalPath.timeTaken);
+                q.add(originalPath, originalPath.getTimeTaken());
             } else {
-                q.add(originalPath, -originalPath.timeTaken);
+                q.add(originalPath, -originalPath.getTimeTaken());
             }
         }
     }

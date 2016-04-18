@@ -10,9 +10,9 @@ import java.util.List;
  */
 public class Path {
 
-    int goldCount;
-    int timeTaken;
-    List<Node> path = new ArrayList<>();
+    private int goldCount;
+    private int timeTaken;
+    private List<Node> path = new ArrayList<>();
 
     public Path(int gold, int time, List<Node> path){
         goldCount = gold;
