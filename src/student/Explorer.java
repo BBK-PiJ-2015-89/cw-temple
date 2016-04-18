@@ -4,6 +4,7 @@ import game.*;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 public class Explorer {
 
@@ -184,11 +185,7 @@ public class Explorer {
                 //continue;
                 for (int i = originalPath.getPath().size() - 1; i >=0; i--) {
                     Collection<Node> tempNbrs = originalPath.getPath().get(i).getNeighbours();
-                    for (Node tnbr : tempNbrs) {
-                        if (originalPath.getPath().contains(tnbr)) {
-                            seen.add(tnbr);
-                        }
-                    }
+                    seen.addAll(tempNbrs.stream().filter(tnbr -> originalPath.getPath().contains(tnbr)).collect(Collectors.toList()));
                 }
             }
             if (nbr.equals(state.getExit())) {
