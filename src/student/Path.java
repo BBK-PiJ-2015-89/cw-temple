@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by graemewilkinson on 16/04/16.
+ * A path object that allows a path of the man to be stored to ensure we can retrace it. All paths will start with the same tiles, like a file system
+ * therefore, to go from one tile to another which is not a neighbour we can use two paths and find where they meet, and go back to that place on the current
+ * path and then follow the new path to the new node. Every time a node is seen its path is added to the list.
  */
 public class Path {
 
@@ -15,10 +17,11 @@ public class Path {
     private List<Node> path = new ArrayList<>();
 
     public Path(int gold, int time, List<Node> path){
-        goldCount = gold;
-        timeTaken = time;
+        goldCount = gold; //paths total gold count
+        timeTaken = time; //total time it took to traverse this path to (edge weights added together)
         this.path = path;
     }
+
 
     public int getGoldCount() {
         return goldCount;

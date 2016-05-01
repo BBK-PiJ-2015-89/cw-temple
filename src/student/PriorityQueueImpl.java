@@ -187,7 +187,6 @@ public class PriorityQueueImpl<E> implements PriorityQueue<E> {
         // k = 0
         b.set(k, bk);
         bkInfo.index = k;
-
     }
 
     /**
